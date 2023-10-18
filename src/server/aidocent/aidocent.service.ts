@@ -13,7 +13,10 @@ import { JwtService } from '@nestjs/jwt';
 import { getNow } from '../utils/common/date.util';
 
 import * as CryptoJS from 'crypto-js';
+
 import { Cookie } from '../constants/response/cookie';
+import { isEmpty } from '../utils/common/text.util';
+import { IProj } from './dal/dto/proj.dto';
 
 @Injectable()
 export class AidocentService {
@@ -21,34 +24,58 @@ export class AidocentService {
   constructor(private chatGptService: ChatGptService, private chatHisDAL: ChatHisDAL, private projDAL: ProjDAL, private jwtService: JwtService) {}
 
   async createNewProject(body: ProjCreateDTO) {
-    const preoject = await this.projDAL.create({
+    const project = await this.projDAL.create({
       status: 'ok',
+      projCode: body.code,
       name: body.name,
       description: body.description,
       memo: body.memo,
       userPrompt: body.userPrompt,
     });
 
-    const origin = `${preoject.projId}-${preoject.createDate}`;
-    const restApiKey = CryptoJS.AES.encrypt(origin, process.env.CRYPTO_REST_API_KEY).toString();
-    return new BasicResponse().status(200).message('').data({ restApiKey });
+    const restApiKey = project.uuid.slice(0, 2) + '-' + project.projCode;
+    await this.projDAL.updateRestApiKey(project.projId, restApiKey);
+
+    return new BasicResponse()
+      .status(200)
+      .message('')
+      .data({
+        ...project,
+        restApiKey,
+      });
+  }
+
+  /**
+   * @param projId
+   * @returns
+   */
+  async renewRestApiKeyOfProject(projId: number) {
+    // project 유효성 확인
+    const project = await this.projDAL.validate(projId);
+    const restApiKey = project.uuid.slice(0, 2) + '-' + project.projCode;
+    await this.projDAL.updateRestApiKey(projId, restApiKey);
+    return new BasicResponse().status(200).message('').data({ restApiKey: restApiKey });
+  }
+
+  async getAllChatsOfConvoSession(convoSessionId: string) {
+    const chats = await this.chatHisDAL.findByConviSessionId(convoSessionId);
+    return new BasicResponse().status(200).message('').data({ chats });
   }
 
   async startNewConversation(response: Response, projId: number) {
     // Encrypt
     const origin = `${projId}-${getNow('YYMMDD_HHmmssSSS')}`;
-    const convoSessionId = CryptoJS.AES.encrypt(origin, process.env.CONVO_SESSION_KEY).toString();
+    const convoSessionId = CryptoJS.RC4.encrypt(origin, process.env.CONVO_SESSION_KEY).toString();
 
     // Decrypt
-    // const bytes = CryptoJS.AES.decrypt(convoSessionId, process.env.CONVO_SESSION_KEY);
+    // const bytes = CryptoJS.RC4.decrypt(convoSessionId, process.env.CONVO_SESSION_KEY);
     // const originalText = bytes.toString(CryptoJS.enc.Utf8);
     // this.logger.debug(originalText);
 
     // cookie setting
-    Cookie.set(response, 'aidocent_convo_session_id', convoSessionId, {
+    Cookie.set(response, 'aidocent-convo-session-id', convoSessionId, {
       httpOnly: true,
       secure: false,
-      domain: 'localhost',
     });
 
     return new BasicResponse().status(200).message('').data({
@@ -56,17 +83,23 @@ export class AidocentService {
     });
   }
 
-  async askToAiWithProject(projId: number, convoSessionId: string, body: ChatAskToAiDTO, query: ChatAskToQueryDTO) {
-    const proj = await this.projDAL.findOne(projId);
+  validateConvoSessionId(convoSessionId: string) {
+    if (isEmpty(convoSessionId)) {
+      throw Error('none convo session id.');
+    }
+    return true;
+  }
 
+  async askToAiWithProject(project: IProj, body: ChatAskToAiDTO, query: ChatAskToQueryDTO) {
+    this.validateConvoSessionId(body.convoSessionId);
     // 유저가 설정한 프롬포트 가져오기
-    const prompt = proj.userPrompt ? new ChatGptMessage('system', proj.userPrompt) : null;
+    const prompt = project.userPrompt ? new ChatGptMessage('system', project.userPrompt) : null;
 
     // 최신 유저 메시지 내용
     const userrMessage = new ChatGptMessage('user', body.question);
 
     // 기존 메시지 내역 가져오기
-    const messages = (await this.chatHisDAL.findByConviSessionIdForGpt(convoSessionId, 10)).reverse();
+    const messages = (await this.chatHisDAL.findByConviSessionIdForGpt(project.projId, body.convoSessionId, 10)).reverse();
     if (prompt) messages.unshift(prompt);
     messages.push(userrMessage);
 
@@ -80,16 +113,16 @@ export class AidocentService {
     // 챗 히스토리 생성
     await this.chatHisDAL.bulkCreate([
       {
-        projId: projId,
-        convoSessionId: convoSessionId,
+        projId: project.projId,
+        convoSessionId: body.convoSessionId,
         type: '',
         status: '',
         speakerRole: userrMessage.role,
         content: userrMessage.content,
       },
       {
-        projId: projId,
-        convoSessionId: convoSessionId,
+        projId: project.projId,
+        convoSessionId: body.convoSessionId,
         type: '',
         status: '',
         speakerRole: answer.role,
@@ -102,12 +135,13 @@ export class AidocentService {
     return new BasicResponse().status(200).message('').data({ answer });
   }
 
-  async askToAiWithProjectByStreaming(res: Response, projId: number, convoSessionId: string, body: ChatAskToAiDTO, query: ChatAskToQueryDTO) {
-    const proj = await this.projDAL.findOne(projId);
-    const prompt = proj.userPrompt ? new ChatGptMessage('system', proj.userPrompt) : null;
+  async askToAiWithProjectByStreaming(res: Response, project: IProj, body: ChatAskToAiDTO, query: ChatAskToQueryDTO) {
+    this.validateConvoSessionId(body.convoSessionId);
+
+    const prompt = project.userPrompt ? new ChatGptMessage('system', project.userPrompt) : null;
     const userrMessage = new ChatGptMessage('user', body.question);
     // 기존 메시지 내역 가져오기
-    const messages = (await this.chatHisDAL.findByConviSessionIdForGpt(convoSessionId, 10)).reverse();
+    const messages = (await this.chatHisDAL.findByConviSessionIdForGpt(project.projId, body.convoSessionId, 10)).reverse();
     if (prompt) messages.unshift(prompt);
     messages.push(userrMessage);
 
@@ -116,8 +150,8 @@ export class AidocentService {
     if (lengthPrompt) messages.push(new ChatGptMessage('system', lengthPrompt));
 
     await this.chatHisDAL.create({
-      projId: projId,
-      convoSessionId: convoSessionId,
+      projId: project.projId,
+      convoSessionId: body.convoSessionId,
       type: '',
       status: '',
       speakerRole: userrMessage.role,
@@ -137,8 +171,8 @@ export class AidocentService {
     res.end(() => {
       // 챗 히스토리 생성
       this.chatHisDAL.create({
-        projId: projId,
-        convoSessionId: convoSessionId,
+        projId: project.projId,
+        convoSessionId: body.convoSessionId,
         type: '',
         status: '',
         speakerRole: 'assistant',

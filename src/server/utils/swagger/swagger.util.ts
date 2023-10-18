@@ -22,15 +22,15 @@ export class SwaggerUtil {
         {
           type: 'apiKey',
           in: 'header',
-          name: 'super_token',
+          name: 'aidocent-rest-api-key',
         },
-        'super_token',
+        'aidocent-rest-api-key',
       )
       .build();
 
     const document = SwaggerModule.createDocument(app, config, {});
     SwaggerModule.setup('doc', app, document, {
-      customSiteTitle: 'Dearto Api Doc',
+      customSiteTitle: 'AI docent API Doc',
       customfavIcon: 'https://dev.cms.dearto.io/favicon.ico',
       swaggerOptions: {
         persistAuthorization: true,

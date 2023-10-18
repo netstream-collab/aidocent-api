@@ -21,7 +21,7 @@ export class ChatGptMessage {
 export class ChatGptService {
   private openai: OpenAI;
   private logger = new Logger(ChatGptService.name);
-  private readonly REST_KEY = process.env.OPENAI_API_KEY || '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';
+  private readonly REST_KEY = process.env.OPENAI_API_KEY;
 
   private readonly timeout = 30 * 1000;
 

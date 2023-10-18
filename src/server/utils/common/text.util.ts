@@ -26,11 +26,7 @@ export function isString(value: any): boolean {
 export function isEmpty(value: any): boolean {
   if (isString(value) && value == '') {
     return true;
-  } else if (
-    value == null ||
-    value == undefined ||
-    (value != null && typeof value == 'object' && !Object.keys(value).length)
-  ) {
+  } else if (value == null || value == undefined || (value != null && typeof value == 'object' && !Object.keys(value).length)) {
     return true;
   } else {
     return false;

@@ -81,9 +81,10 @@ export default class ChatHisDAL {
     return this.convertResult(result) || [];
   }
 
-  async findByConviSessionIdForGpt(convoSessionId: string, limit = 10) {
+  async findByConviSessionIdForGpt(projId: number, convoSessionId: string, limit = 10) {
     const result = await this.chatHisRepo.find({
       where: {
+        nPROJ_ID: projId,
         sCONVO_SESSION_ID: convoSessionId,
       },
       order: {

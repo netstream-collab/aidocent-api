@@ -2,6 +2,10 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
 
 export class ChatAskToAiDTO {
+  @ApiProperty({ title: '대화 세션 아이디', description: '', example: '' })
+  @IsString()
+  readonly convoSessionId: string;
+
   @ApiProperty({ title: '질문 내용', description: 'ai에게 질문할 내용', example: '안녕?' })
   @IsString()
   readonly question: string;

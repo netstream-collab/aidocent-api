@@ -6,7 +6,7 @@ import { TB_CHAT_HIS } from '../entities/TB_CHAT_HIS.entity';
 import { IChatHis } from '../dto/chatHis.dto';
 import { setDotProps } from 'src/server/utils/common/dbRawData.util';
 import { getNow } from 'src/server/utils/common/date.util';
-import { createUUID } from 'src/server/utils/common/text.util';
+import { createUUID, isEmpty } from 'src/server/utils/common/text.util';
 import { jsonToPlain } from 'src/server/utils/common/object.util';
 import { TB_PROJ } from '../entities/TB_PROJ.entity';
 import { IProj } from '../dto/proj.dto';
@@ -46,12 +46,13 @@ export default class ProjDAL {
     const nowDate = getNow();
     const result = await this.projRepo.save({
       sUUID: createUUID(),
+      sPROJ_CODE: createOpt.projCode,
       sNAME: createOpt.name,
       sDESCRIPTION: createOpt.description,
       cSTATUS: createOpt.status,
       tUSER_PROMPT: createOpt.userPrompt,
       tMEMO: createOpt.memo,
-      sREST_API_KEY: 'api-key-test',
+      sREST_API_KEY: '',
       createDate: nowDate,
       updateDate: nowDate,
     });
@@ -63,10 +64,41 @@ export default class ProjDAL {
       where: {
         nPROJ_ID: projId,
       },
-      order: {
-        nPROJ_ID: 'DESC',
+    });
+    return this.convertResult(result);
+  }
+
+  async findOneByRestApiKey(restApiKey: string) {
+    const result = this.projRepo.findOne({
+      where: {
+        sREST_API_KEY: restApiKey,
       },
     });
     return this.convertResult(result);
+  }
+
+  async validate(projId: number) {
+    if (!projId) {
+      throw new Error('none project');
+    }
+    const project = await this.findOne(projId);
+    if (isEmpty(project)) {
+      throw new Error('none project');
+    } else if (project.status !== 'ok') {
+      throw new Error('invalid project');
+    }
+    return project;
+  }
+
+  async updateRestApiKey(projId: number, restApiKey: string) {
+    const result = await this.projRepo.update(
+      {
+        nPROJ_ID: projId,
+      },
+      {
+        sREST_API_KEY: restApiKey,
+      },
+    );
+    return result.affected;
   }
 }

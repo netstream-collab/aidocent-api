@@ -16,6 +16,9 @@ export class IProj {
   @Expose({ name: 'sUUID' })
   uuid?: string;
 
+  @Expose({ name: 'sPROJ_CODE' })
+  projCode: string;
+
   @Expose({ name: 'cSTATUS' })
   status: string;
 

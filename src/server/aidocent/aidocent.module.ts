@@ -4,6 +4,7 @@ import { AidocentController } from './aidocent.controller';
 import { AidocentService } from './aidocent.service';
 import { UtilsModule } from '../utils/utils.module';
 import { JwtModule } from '@nestjs/jwt';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { JwtModule } from '@nestjs/jwt';
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '1d' },
     }),
+    AuthModule,
   ],
   controllers: [AidocentController],
   providers: [AidocentService],

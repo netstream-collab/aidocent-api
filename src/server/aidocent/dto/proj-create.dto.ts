@@ -1,10 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, Matches } from 'class-validator';
 
 export class ProjCreateDTO {
   @ApiProperty({ title: '프로젝트 이름', example: '신규 프로젝트' })
   @IsString()
   readonly name: string;
+
+  @ApiProperty({ title: '프로젝트 코드', description: '영어,숫자,기호만 가능', example: 'sample' })
+  @IsString()
+  @Matches(/^[A-Za-z0-9-_]+$/g)
+  readonly code: string;
 
   @ApiPropertyOptional({ title: '프로젝트 설명', example: '신규 아이템 전시 프로젝트' })
   @IsString()

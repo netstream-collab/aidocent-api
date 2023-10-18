@@ -5,7 +5,7 @@ export class TB_PROJ {
   @PrimaryGeneratedColumn() nPROJ_ID: number;
 
   @Column() sUUID: string;
-
+  @Column() sPROJ_CODE: string;
   @Column() cSTATUS: string;
   @Column() sNAME: string;
   @Column() sDESCRIPTION: string;

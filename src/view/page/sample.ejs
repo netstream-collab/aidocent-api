@@ -24,27 +24,28 @@
     
     // 서버로부터 스트리밍 데이터를 받는 함수 (예: Fetch API 사용)
     async function fetchStreamingData() {
-        const response = await fetch('http://localhost:4000/chat/ask/stream?length=long', {
-          method: "POST", 
-          headers: {
-            'Content-Type': 'application/json;charset=utf-8'
-           }, 
-          body: JSON.stringify({ question: '안녕'})
-        });
-        const reader = response.body.getReader();
-        let text = '';
+      const response = await fetch('http://localhost:4000/chat/ask/stream?length=long', {
+        method: "POST", 
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8'
+         }, 
+        body: JSON.stringify({ question: '안녕'})
+      });
+      const reader = response.body.getReader();
+      let text = '';
         
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) {
-                break;
-            }
-            
-            // 받은 데이터를 텍스트로 변환하여 화면에 추가
-            text += new TextDecoder('utf-8').decode(value);
-            textDisplay.innerHTML = text;
-        }
+      while (true) {
+          const { done, value } = await reader.read();
+          if (done) {
+              break;
+          }
+          
+          // 받은 데이터를 텍스트로 변환하여 화면에 추가
+          text += new TextDecoder('utf-8').decode(value);
+          textDisplay.innerHTML = text;
+      }
     }
+
      async function fetchTextData() {
         const response = await fetch('http://localhost:4000/chat/ask?length=long', {
           method: "POST", 
@@ -53,11 +54,9 @@
            }, 
           body: JSON.stringify({ question: '안녕'})
         });
-        
 
         const resData = await response.json()
         textDisplay.innerHTML = resData.data?.answer.content || 'error';
-        
     }
     
 </script>
