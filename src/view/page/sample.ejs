@@ -54,7 +54,9 @@
           body: JSON.stringify({ question: '안녕'})
         });
         
-        textDisplay.innerHTML = JSON.stringify(await response.json());
+
+        const resData = await response.json()
+        textDisplay.innerHTML = resData.data?.answer.content || 'error';
         
     }
     
