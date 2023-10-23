@@ -8,13 +8,7 @@ export class BasicResponse<T> {
   private _error?: string;
   private _data: T;
 
-  constructor(
-    status?: number,
-    resultCode?: string,
-    message?: string,
-    error?: string,
-    data?: T,
-  ) {
+  constructor(status?: number, resultCode?: string, message?: string, error?: string, data?: T) {
     if (status) {
       this._status = status;
       this._resultCode = resultCode;
@@ -88,7 +82,7 @@ export class BasicResponse<T> {
       resultCode: this._resultCode,
       message: this._message,
       error: this._error,
-      data: this._data,
+      data: this._data || {},
     };
   }
 }

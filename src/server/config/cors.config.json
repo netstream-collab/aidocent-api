@@ -1,6 +1,6 @@
 {
   "local": {
-    "cors_origins": ["http://localhost:4000", ""],
+    "cors_origins": ["http://localhost:4000", "http://localhost:3333"],
     "cookie_domains": []
   },
   "dev": {

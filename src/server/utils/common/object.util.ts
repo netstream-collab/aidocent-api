@@ -58,7 +58,6 @@ export function classToObjectByKeys(classValue: any, ...getKeys: string[]) {
  * @returns
  */
 export function jsonToPlain(cls: ClassConstructor<unknown>, json: Record<string, any>, excludeUndef?: boolean): Record<string, any> {
-  _l.debug('jsonToPlain json: ', json);
   if (isEmpty(json)) return null;
   const classItem = new cls();
   Object.keys(json).map((key) => (classItem[key] = json[key]));
@@ -69,7 +68,6 @@ export function jsonToPlain(cls: ClassConstructor<unknown>, json: Record<string,
   if (excludeUndef) {
     Object.keys(result).map((key) => result[key] === undefined && delete result[key]);
   }
-  _l.debug('jsonToPlain result: ', result);
   return result;
 }
 

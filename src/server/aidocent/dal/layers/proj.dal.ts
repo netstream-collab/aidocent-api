@@ -10,6 +10,7 @@ import { createUUID, isEmpty } from 'src/server/utils/common/text.util';
 import { jsonToPlain } from 'src/server/utils/common/object.util';
 import { TB_PROJ } from '../entities/TB_PROJ.entity';
 import { IProj } from '../dto/proj.dto';
+import Codes from 'src/server/constants/codes';
 
 @Injectable()
 export default class ProjDAL {
@@ -53,8 +54,8 @@ export default class ProjDAL {
       tUSER_PROMPT: createOpt.userPrompt,
       tMEMO: createOpt.memo,
       sREST_API_KEY: '',
-      createDate: nowDate,
-      updateDate: nowDate,
+      dCREATE: nowDate,
+      dUPDATE: nowDate,
     });
     return this.convertResult(result);
   }
@@ -84,10 +85,32 @@ export default class ProjDAL {
     const project = await this.findOne(projId);
     if (isEmpty(project)) {
       throw new Error('none project');
-    } else if (project.status !== 'ok') {
+    } else if (project.status !== Codes.ProjectStatus.VALID) {
       throw new Error('invalid project');
     }
     return project;
+  }
+
+  async findAll() {
+    const result = await this.projRepo.find();
+    return this.convertResult(result);
+  }
+
+  async update(projId: number, updateOpt: Partial<IProj>) {
+    const updateCondition = jsonToPlain(IProj, updateOpt);
+    if (!isEmpty(updateOpt) && !isEmpty(updateCondition)) {
+      await this.projRepo.update(
+        {
+          nPROJ_ID: projId,
+        },
+        {
+          ...updateCondition,
+          dUPDATE: getNow(),
+        },
+      );
+    }
+
+    return await this.findOne(projId);
   }
 
   async updateRestApiKey(projId: number, restApiKey: string) {

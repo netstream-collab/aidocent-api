@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ChatGptModule } from './chat-gpt/chat-gpt.module';
+import { ClovaModule } from './clova/clova.module';
+import { OpenAiModule } from './open-ai/open-ai.module';
 
 @Module({
-  imports: [ChatGptModule],
-  exports: [ChatGptModule],
+  imports: [OpenAiModule, ClovaModule],
+  exports: [OpenAiModule, ClovaModule],
+  providers: [],
 })
 export class UtilsModule {}

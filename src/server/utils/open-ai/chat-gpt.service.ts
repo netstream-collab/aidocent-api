@@ -1,21 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OpenAI } from 'openai';
 import { isEmpty } from '../common/text.util';
-
-/**
- *
- */
-export type TChatGptRole = 'system' | 'assistant' | 'user';
-
-export class ChatGptMessage {
-  role: TChatGptRole;
-  content: string;
-
-  constructor(role: TChatGptRole, content: string) {
-    this.role = role;
-    this.content = content;
-  }
-}
+import { ChatGptMessage } from './types/chat-message.type';
 
 @Injectable()
 export class ChatGptService {
@@ -25,21 +11,16 @@ export class ChatGptService {
 
   private readonly timeout = 30 * 1000;
 
+  /**
+   * gpt-4, gpt-4-0613, gpt-3.5-turbo
+   * @link https://platform.openai.com/docs/models/model-endpoint-compatibility
+   */
+  private readonly model = 'gpt-3.5-turbo';
+
   constructor() {
     this.openai = new OpenAI({
       apiKey: this.REST_KEY,
     });
-  }
-
-  createLengthPrompt(length?: string | 'short' | 'long') {
-    switch (length) {
-      case 'short':
-        return '20초 이하의 분량으로 답해.';
-      case 'long':
-        return '5줄 이상의 분량으로 답해.';
-      default:
-        return '';
-    }
   }
 
   /**
@@ -55,7 +36,7 @@ export class ChatGptService {
       this.logger.debug('> GPT messages: ', messages);
       const completion = await this.openai.chat.completions.create(
         {
-          model: 'gpt-3.5-turbo',
+          model: this.model,
           messages: messages,
         },
         {
@@ -89,7 +70,7 @@ export class ChatGptService {
     this.logger.debug('> GPT messages: ', messages);
     const stream = await this.openai.chat.completions.create(
       {
-        model: 'gpt-3.5-turbo',
+        model: this.model,
         messages: messages,
         stream: true,
       },

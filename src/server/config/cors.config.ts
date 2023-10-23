@@ -16,19 +16,7 @@ export class CorsConfig {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
     optionsSuccessStatus: 204,
-    exposedHeaders: [
-      'Authorization',
-      'access_token',
-      'refresh_token',
-      'super_token',
-    ],
-    allowedHeaders: [
-      'Content-Type',
-      'Authorization',
-      'authorization',
-      'access_token',
-      'refresh_token',
-      'super_token',
-    ],
+    exposedHeaders: ['Authorization', 'access_token', 'refresh_token', 'super_token', 'aidocent-answer-text'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'authorization', 'access_token', 'refresh_token', 'super_token', 'aidocent-rest-api-key'],
   };
 }

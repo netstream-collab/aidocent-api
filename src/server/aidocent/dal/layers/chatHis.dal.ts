@@ -96,4 +96,17 @@ export default class ChatHisDAL {
       excludeExtraneousValues: true,
     });
   }
+
+  async findAllConvoSessionIdOfProject(projId: number) {
+    const result = await this.chatHisRepo
+      .createQueryBuilder('chatHis')
+      .select('*')
+      .where('chatHis.nPROJ_ID = :projId', {
+        projId: projId,
+      })
+      .orderBy('chatHis.nCHAT_ID', 'DESC')
+      .groupBy('chatHis.sCONVO_SESSION_ID')
+      .getRawMany();
+    return this.convertResult(result);
+  }
 }

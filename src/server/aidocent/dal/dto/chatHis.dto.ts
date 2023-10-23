@@ -1,5 +1,5 @@
 import { Exclude, Expose, Transform, Type } from 'class-transformer';
-import { TChatGptRole } from 'src/server/utils/chat-gpt/chat-gpt.service';
+import { TChatGptRole } from 'src/server/utils/open-ai/types/chat-message.type';
 
 /**
  * class-transformer 사용 예시

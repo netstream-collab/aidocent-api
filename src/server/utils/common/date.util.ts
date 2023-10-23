@@ -30,11 +30,7 @@ export function getNow(format?: string) {
  * @param unit 기본값으로 ms
  * @returns
  */
-export function getDateDiff(
-  d1: Date | string,
-  d2: Date | string,
-  unit?: ManipulateType,
-) {
+export function getDateDiff(d1: Date | string, d2: Date | string, unit?: ManipulateType) {
   return dayjs(d1).diff(d2, unit || 'ms');
 }
 
@@ -46,12 +42,7 @@ export function getDateDiff(
  * @param format
  * @returns
  */
-export function addDate(
-  startDate: Date | string,
-  diff: number,
-  unit: ManipulateType,
-  format?: string,
-) {
+export function addDate(startDate: Date | string, diff: number, unit: ManipulateType, format?: string) {
   return dayjs(startDate)
     .add(diff, unit)
     .format(format || DefaultDateFormat);
@@ -65,12 +56,7 @@ export function addDate(
  * @param format
  * @returns
  */
-export function subDate(
-  startDate: Date | string,
-  diff: number,
-  unit: ManipulateType,
-  format?: string,
-) {
+export function subDate(startDate: Date | string, diff: number, unit: ManipulateType, format?: string) {
   return dayjs(startDate)
     .subtract(diff, unit)
     .format(format || DefaultDateFormat);

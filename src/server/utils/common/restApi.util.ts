@@ -1,60 +1,77 @@
 import axios from 'axios';
 import _l from 'src/server/constants/logger/CommonLogger';
-type TMethod =
-  | 'get'
-  | 'post'
-  | 'fetch'
-  | 'delete'
-  | 'GET'
-  | 'POST'
-  | 'FETCH'
-  | 'DELETE';
+import { isEmpty } from './text.util';
+type TMethod = 'get' | 'post' | 'fetch' | 'delete' | 'GET' | 'POST' | 'FETCH' | 'DELETE';
 
 axios.defaults.withCredentials = true;
 
-async function RestApi(
-  method: TMethod,
-  url: string,
-  headers?: any,
-  body?: any,
-  getRawRes?: boolean,
-): Promise<any> {
-  function logResponse() {
-    const { status, statusText, headers, data } = response;
-    const resLog = { status, statusText, headers, data };
-    _l.name('RestApi').log('RestApi RESPONSE:', resLog);
-    _l.name('RestApi').log(
-      'RestApi RESPONSE URL:',
-      response.request.res.responseUrl,
-    );
-    // console.log('RestApi RESPONSE:', response.request.res.headers);
+export default class RestApi {
+  static async request(method: TMethod, url: string, body?: any, headers?: any, getRawRes?: boolean) {
+    function logResponse() {
+      const { status, statusText, headers, data } = response;
+      const resLog = { status, statusText, headers, data };
+      // console.log('RestApi RESPONSE:', response);
+      console.log('RestApi RESPONSE:', resLog);
+      console.log('RestApi RESPONSE URL:', response.request.res.responseUrl);
+      // console.log('RestApi RESPONSE:', response.request.res.headers);
+    }
+    function logRequest() {
+      console.log(`RestApi REQUEST: ${method} ${url}`);
+      // console.log(`RestApi REQUEST BODY: ${body ? JSON.stringify(body) : ''}`);
+    }
+
+    if (isEmpty(url)) {
+      throw new Error('RestApi: Please enter url (include host url).');
+    }
+
+    logRequest();
+    const response = await axios({
+      method: method,
+      url: url,
+      data: body,
+      headers,
+    });
+
+    logResponse();
+    if (getRawRes) {
+      return response;
+    } else {
+      return response.data;
+    }
   }
-  function logRequest() {
-    _l.name('RestApi').log(`RestApi REQUEST: ${method} ${url}`);
-    _l.name('RestApi').log(
-      `RestApi REQUEST BODY: ${body ? JSON.stringify(body) : ''}`,
-    );
-  }
 
-  if (!url) {
-    throw new Error('RestApi: Please enter url (include host url).');
-  }
+  static async requestStream(method: TMethod, url: string, body?: any, headers?: any, getRawRes?: boolean) {
+    function logResponse() {
+      const { status, statusText, headers, data } = response;
+      const resLog = { status, statusText, headers, data };
+      // console.log('RestApi RESPONSE:', response);
+      console.log('RestApi RESPONSE:', resLog);
+      console.log('RestApi RESPONSE URL:', response.request.res.responseUrl);
+      // console.log('RestApi RESPONSE:', response.request.res.headers);
+    }
+    function logRequest() {
+      console.log(`RestApi REQUEST: ${method} ${url}`);
+      console.log(`RestApi REQUEST BODY: ${body ? JSON.stringify(body) : ''}`);
+    }
 
-  logRequest();
-  const response = await axios({
-    method: method,
-    url: url,
-    data: body,
-    headers,
-  });
+    if (isEmpty(url)) {
+      throw new Error('RestApi: Please enter url (include host url).');
+    }
 
-  logResponse();
+    logRequest();
+    const response = await axios({
+      method: method,
+      url: url,
+      data: body,
+      headers,
+      responseType: 'stream',
+    });
 
-  if (getRawRes) {
-    return response;
-  } else {
-    return response.data;
+    logResponse();
+    if (getRawRes) {
+      return response;
+    } else {
+      return response.data;
+    }
   }
 }
-
-export default RestApi;

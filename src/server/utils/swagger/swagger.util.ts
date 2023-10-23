@@ -9,15 +9,6 @@ export class SwaggerUtil {
       .setTitle('AI docent API Doc')
       .setDescription('')
       .setVersion('0.0.0')
-      .addBearerAuth(
-        {
-          type: 'http',
-          scheme: 'Bearer',
-          name: 'JWT',
-          in: 'header',
-        },
-        'Authorization',
-      )
       .addApiKey(
         {
           type: 'apiKey',
@@ -31,7 +22,6 @@ export class SwaggerUtil {
     const document = SwaggerModule.createDocument(app, config, {});
     SwaggerModule.setup('doc', app, document, {
       customSiteTitle: 'AI docent API Doc',
-      customfavIcon: 'https://dev.cms.dearto.io/favicon.ico',
       swaggerOptions: {
         persistAuthorization: true,
       },

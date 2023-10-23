@@ -3,14 +3,18 @@
     <%- include('../components/head.ejs', {title: "sample"}) %>
 <body>
   <h1>Sample page</h1>
+  <p>
+    <input type="text" name="" id="projectRestApiKeyInput" placeholder="project rest api key"> 
+  </p>
 
-
-  <p id="textDisplay"></p>
+  <input type="text" name="" id="userToAiQuestion">
   <input type="button" value="text 요청하기" id="askToAiByTextBtn">
   <input type="button" value="stream 요청하기" id="askToAiByStreamingBtn">
 
   <script>
     const textDisplay = document.getElementById('textDisplay');
+    const questionInput = document.getElementById('userToAiQuestion');
+    const restApiKeyInput = document.getElementById('projectRestApiKeyInput');
 
     const askToAiByTextBtn = document.getElementById('askToAiByTextBtn')
     askToAiByTextBtn.addEventListener('click', (e) => {
@@ -24,12 +28,13 @@
     
     // 서버로부터 스트리밍 데이터를 받는 함수 (예: Fetch API 사용)
     async function fetchStreamingData() {
-      const response = await fetch('http://localhost:4000/chat/ask/stream?length=long', {
+      
+      const response = await fetch('/aid/chat/ask/stream?length=long', {
         method: "POST", 
         headers: {
           'Content-Type': 'application/json;charset=utf-8'
          }, 
-        body: JSON.stringify({ question: '안녕'})
+        body: JSON.stringify({ question: questionInput.value })
       });
       const reader = response.body.getReader();
       let text = '';
@@ -43,20 +48,23 @@
           // 받은 데이터를 텍스트로 변환하여 화면에 추가
           text += new TextDecoder('utf-8').decode(value);
           textDisplay.innerHTML = text;
+        questionInput.value = '';
+
       }
     }
 
      async function fetchTextData() {
-        const response = await fetch('http://localhost:4000/chat/ask?length=long', {
+        const response = await fetch('/aid/chat/ask?length=long', {
           method: "POST", 
           headers: {
             'Content-Type': 'application/json;charset=utf-8'
            }, 
-          body: JSON.stringify({ question: '안녕'})
+          body: JSON.stringify({ question: questionInput.value})
         });
 
         const resData = await response.json()
         textDisplay.innerHTML = resData.data?.answer.content || 'error';
+        questionInput.value = '';
     }
     
 </script>

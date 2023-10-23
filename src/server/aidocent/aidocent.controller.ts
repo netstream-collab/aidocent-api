@@ -1,12 +1,41 @@
-import { Body, Controller, Delete, Get, Headers, HttpCode, Param, Patch, Post, Query, Res, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiHeader, ApiHeaders, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Headers,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Res,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiConsumes, ApiHeader, ApiHeaders, ApiOperation, ApiResponse, ApiTags, OmitType } from '@nestjs/swagger';
 import { AidocentService } from './aidocent.service';
-import { ChatAskToAiDTO, ChatAskToQueryDTO } from './dto/chat-ask-to-ai.dto';
+import { ChatAskToAiByVoiceDTO, ChatAskToAiDTO } from './dto/chat-ask-to-ai.dto';
 import { ProjCreateDTO } from './dto/proj-create.dto';
 import { RequestIP } from '../utils/network/requestIp.decorator';
 import { Response } from 'express';
 import { RestApiKeyGuard } from './auth/guard/restApiKey.guard';
 import { Project } from './auth/decorator/projcet.decorator';
+import { ProjUpdateDTO } from './dto/proj-update.dto';
+import {
+  ApiDeleteProjInfo,
+  ApiGetProjAllRes,
+  ApiGetProjConvoChat,
+  ApiGetProjConvoList,
+  ApiGetProjInfo,
+  ApiPatchProjInfo,
+  ApiPostAidChatAskText,
+  ApiPostAidChatNewConvo,
+  ApiPostProjNewRes,
+  ApiPostProjRenewRestApiKey,
+} from '../utils/swagger/schemas/api-response.type';
+import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('AI docent')
 @Controller('')
@@ -14,37 +43,59 @@ export class AidocentController {
   constructor(readonly aidocentService: AidocentService) {}
 
   /** --- Project --------------------------------------------- */
-  @ApiOperation({ summary: '특정 프로젝트 정보 가져오기' })
-  @Get('/proj/info/:projId')
-  getOneProjectInfo(@Param('projId') projId: number) {}
 
-  @ApiOperation({ summary: '특정 프로젝트 삭제하기' })
-  @Delete('/proj/del/:projId')
-  deleteOneProject() {}
+  @ApiOperation({ summary: '모든 프로젝트 정보 가져오기' })
+  @ApiResponse({ status: 200, type: ApiGetProjAllRes })
+  @Get('/proj/all')
+  getAllProject() {
+    return this.aidocentService.getAllProject();
+  }
 
   @ApiOperation({ summary: '신규 프로젝트 생성' })
-  @ApiResponse({ status: 200, description: '정상 작동 완료' })
+  @ApiResponse({ status: 200, description: '정상 작동 완료', type: ApiPostProjNewRes })
   @Post('/proj/new')
   @HttpCode(200)
   createNewProject(@Body() body: ProjCreateDTO) {
     return this.aidocentService.createNewProject(body);
   }
 
+  @ApiOperation({ summary: '특정 프로젝트 정보 가져오기' })
+  @ApiResponse({ status: 200, description: '정상 작동 완료', type: ApiGetProjInfo })
+  @Get('/proj/:projId/info')
+  getOneProjectInfo(@Param('projId') projId: number) {
+    return this.aidocentService.getOneProjectInfo(projId);
+  }
+
+  @ApiOperation({ summary: '특정 프로젝트의 정보 수정하기' })
+  @ApiResponse({ status: 200, description: '정상 작동 완료', type: ApiPatchProjInfo })
+  @Patch('/proj/:projId/info')
+  updateProjectInfo(@Param('projId') projId: number, @Body() body: ProjUpdateDTO) {
+    return this.aidocentService.updateProjectInfo(projId, body);
+  }
+
+  @ApiOperation({ summary: '특정 프로젝트 삭제하기' })
+  @ApiResponse({ status: 200, description: '정상 작동 완료', type: ApiDeleteProjInfo })
+  @Post('/proj/:projId/del')
+  deleteOneProject(@Param('projId') projId: number) {
+    return this.aidocentService.deleteOneProject(projId);
+  }
+
   @ApiOperation({ summary: '특정 프로젝트의 rest-api-key 갱신하기' })
-  @Post('/proj/renew/:projId/rest-api-key')
+  @ApiResponse({ status: 200, description: '정상 작동 완료', type: ApiPostProjRenewRestApiKey })
+  @Post('/proj/:projId/renew/rest-api-key')
   renewRestApiKeyOfProject(@Param('projId') projId: number) {
     return this.aidocentService.renewRestApiKeyOfProject(projId);
   }
 
-  @ApiOperation({ summary: '특정 프로젝트의 정보 수정하기' })
-  @Patch('/proj/info/:projId')
-  updateProjectInfo() {}
-
-  @ApiOperation({ summary: '특정 프로젝트의 정보 수정하기' })
-  @Get('/proj/convo/:projId')
-  getAllConvoOfProject(@Param('projId') projId: number) {}
+  @ApiOperation({ summary: '특정 프로젝트의 대화 내역 리스트 가져오기' })
+  @ApiResponse({ status: 200, description: '정상 작동 완료', type: ApiGetProjConvoList })
+  @Get('/proj/:projId/convo')
+  getAllConvoOfProject(@Param('projId') projId: number) {
+    return this.aidocentService.getAllConvoOfProject(projId);
+  }
 
   @ApiOperation({ summary: 'convo session에 속한 모든 챗 정보 가져오기' })
+  @ApiResponse({ status: 200, description: '정상 작동 완료', type: ApiGetProjConvoChat })
   @Get('/proj/convo/chat/:convoSessionId')
   getAllChatsOfConvoSession(@Param('convoSessionId') convoSessionId: string) {
     return this.aidocentService.getAllChatsOfConvoSession(convoSessionId);
@@ -54,15 +105,16 @@ export class AidocentController {
 
   @ApiBearerAuth('aidocent-rest-api-key')
   @ApiOperation({ summary: 'rest api key를 통해 프로젝트 정보 가져오기', description: '' })
+  @ApiResponse({ status: 200, type: ApiGetProjAllRes })
   @Get('/aid/proj/info')
   @UseGuards(RestApiKeyGuard)
   async getProjectInfoByRestApiKey(@Project() project) {
-    return project;
+    return this.aidocentService.getProjectInfoByRestApiKey(project);
   }
 
   @ApiBearerAuth('aidocent-rest-api-key')
-  @ApiOperation({ summary: '프로젝트 기반으로 ai에게 질문하기' })
-  @ApiResponse({ status: 200, description: '정상 작동 완료' })
+  @ApiOperation({ summary: '신규 대화 세션값 생성하기' })
+  @ApiResponse({ status: 200, description: '정상 작동 완료', type: ApiPostAidChatNewConvo })
   @Post('/aid/chat/new/convo')
   @HttpCode(200)
   @UseGuards(RestApiKeyGuard)
@@ -71,27 +123,69 @@ export class AidocentController {
   }
 
   @ApiBearerAuth('aidocent-rest-api-key')
-  @ApiOperation({ summary: '프로젝트 기반으로 ai에게 질문하기' })
-  @ApiResponse({ status: 200, description: '정상 작동 완료' })
+  @ApiOperation({ summary: '프로젝트 기반으로 ai에게 질문하기 / 리턴타입: 텍스트' })
+  @ApiResponse({ status: 200, description: '정상 작동 완료', type: ApiPostAidChatAskText })
   @HttpCode(200)
   @Post('/aid/chat/ask')
   @UseGuards(RestApiKeyGuard)
-  askToAiWithProject(@Query() query: ChatAskToQueryDTO, @Body() body: ChatAskToAiDTO, @Project() project) {
-    return this.aidocentService.askToAiWithProject(project, body, query);
+  askToAiWithProject(@Res({ passthrough: true }) res, @Body() body: ChatAskToAiDTO, @Project() project) {
+    return this.aidocentService.askToAiWithProject(project, body);
   }
 
   @ApiBearerAuth('aidocent-rest-api-key')
-  @ApiOperation({ summary: '프로젝트 기반으로 ai에게 질문하기' })
+  @ApiOperation({ summary: '프로젝트 기반으로 ai에게 질문하기  / 리턴타입: 텍스트 스트림' })
   @ApiResponse({ status: 200, description: '정상 작동 완료' })
   @HttpCode(200)
   @Post('/aid/chat/ask/stream')
   @UseGuards(RestApiKeyGuard)
-  askToAiWithProjectByStreaming(
+  askToAiWithProjectByStreaming(@Res({ passthrough: true }) res, @Body() body: ChatAskToAiDTO, @Project() project) {
+    return this.aidocentService.askToAiWithProjectByStreaming(res, project, body);
+  }
+
+  @ApiBearerAuth('aidocent-rest-api-key')
+  @ApiOperation({ summary: '프로젝트 기반으로 ai에게 질문하기  / 리턴타입: tts 보이스 스트림' })
+  @ApiResponse({
+    status: 200,
+    description: '정상 작동 완료',
+    headers: {
+      'aidocent-answer-text': {
+        description: 'ai 답변 문자열',
+        example: '안녕! 어떻게 지내?',
+      },
+    },
+  })
+  @HttpCode(200)
+  @Post('/aid/chat/ask/tts')
+  @UseGuards(RestApiKeyGuard)
+  askToAiWithProjectReturnTTS(@Res({ passthrough: true }) res, @Body() body: ChatAskToAiDTO, @Project() project) {
+    return this.aidocentService.askToAiWithProjectReturnTTS(res, project, body);
+  }
+
+  @ApiBearerAuth('aidocent-rest-api-key')
+  @ApiOperation({ summary: '음성파일로 질문하기' })
+  @ApiConsumes('multipart/form-data')
+  @ApiResponse({
+    status: 200,
+    description: '정상',
+    headers: {
+      'aidocent-question-text': {
+        description: '질문으로 인식된 문자열',
+      },
+      'aidocent-answer-text': {
+        description: 'ai 답변 문자열',
+      },
+    },
+  })
+  @HttpCode(200)
+  @Post('/aid/chat/ask/voice')
+  @UseGuards(RestApiKeyGuard)
+  @UseInterceptors(FileInterceptor('questionVoice'))
+  askToAiWithProjectByVoice(
     @Res({ passthrough: true }) res,
-    @Query() query: ChatAskToQueryDTO,
-    @Body() body: ChatAskToAiDTO,
+    @Body() body: ChatAskToAiByVoiceDTO,
     @Project() project,
+    @UploadedFile() questionVoiceFile: Express.Multer.File,
   ) {
-    return this.aidocentService.askToAiWithProjectByStreaming(res, project, body, query);
+    return this.aidocentService.askToAiWithProjectByVoice(res, project, body, questionVoiceFile);
   }
 }

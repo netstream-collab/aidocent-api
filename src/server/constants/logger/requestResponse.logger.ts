@@ -13,13 +13,9 @@ function logRequest(reqLogData) {
     );
   } else if (reqLogData.url == '/favicon.ico') {
     // 의미 없는 request 요청
-    _l.name('RES').log(
-      `none favicon ${reqLogData.url} "${reqLogData.sessionID}" ${reqLogData.ip} ${reqLogData.userAgent}`,
-    );
+    _l.name('RES').log(`none favicon ${reqLogData.url} "${reqLogData.sessionID}" ${reqLogData.ip} ${reqLogData.userAgent}`);
   } else {
-    _l.name('REQ').log(
-      `${reqLogData.method} ${reqLogData.url} "${reqLogData.sessionID}" ${reqLogData.ip} ${reqLogData.userAgent}`,
-    );
+    _l.name('REQ').log(`${reqLogData.method} ${reqLogData.url} "${reqLogData.sessionID}" ${reqLogData.ip} ${reqLogData.userAgent}`);
     _l.name('REQ').log('headers: ' + JSON.stringify(reqLogData.headers));
     _l.name('REQ').log(`body: `, reqLogData.body);
   }
@@ -32,9 +28,7 @@ function logResponse(resLogData) {
     );
   } else if (resLogData.url == '/favicon.ico') {
     // 의미 없는 request 요청
-    _l.name('RES').log(
-      `none favicon ${resLogData.requestUrl} ${resLogData.statusCode} ${resLogData.statusMessage} - ${resLogData.responseTime} ms`,
-    );
+    _l.name('RES').log(`none favicon ${resLogData.requestUrl} ${resLogData.statusCode} ${resLogData.statusMessage} - ${resLogData.responseTime} ms`);
   } else if (resLogData.url.includes('_next')) {
     _l.name('RES').log(
       `Next.js ${resLogData.requestUrl} "${resLogData.sessionID}" ${resLogData.statusCode} ${resLogData.statusMessage} - ${resLogData.responseTime} ms`,
@@ -45,6 +39,7 @@ function logResponse(resLogData) {
     );
 
     _l.name('RES').log('headers: ' + JSON.stringify(resLogData.headers));
+
     if (resLogData.headers['content-length'] < 1000) {
       _l.name('RES').log('body: ' + JSON.stringify(resLogData.body));
     } else {
@@ -61,11 +56,7 @@ function logResponse(resLogData) {
  * - 실제 response로 보낸 값이 아닐 수 도 있음
  * - execption/error 같은 경우 basicResponse class를 거치지 않을 수 있음
  */
-export function RequestResponseLogger(
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) {
+export function RequestResponseLogger(req: Request, res: Response, next: NextFunction) {
   const startTime = performance.now();
   const requestIP = getIP(req);
 
