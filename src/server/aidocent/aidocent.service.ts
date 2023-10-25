@@ -24,6 +24,7 @@ import { ChatGptMessage } from '../utils/open-ai/types/chat-message.type';
 import { WhisperService } from '../utils/open-ai/whisper.service';
 import { ClovaCSRService } from '../utils/clova/clova-csr.service';
 import { EtriService } from '../utils/etri/etri.service';
+import { CustomSearchJsonService } from '../utils/google/custom-search-json.service';
 
 @Injectable()
 export class AidocentService {
@@ -37,9 +38,21 @@ export class AidocentService {
     private clovaCSRService: ClovaCSRService,
     private chatHisDAL: ChatHisDAL,
     private projDAL: ProjDAL,
+    private customSearchJsonService: CustomSearchJsonService,
   ) {}
 
-  async searchTest() {}
+  async searchTest() {
+    const searchResult = await this.customSearchJsonService.search('작가 박봉수', {
+      num: 3,
+    });
+
+    const search = searchResult.items;
+    const prompt = `\`\`\`\n${JSON.stringify(search)}\n\`\`\`위 내용을 요약 정리해라`;
+    const userrMessage = new ChatGptMessage('user', prompt);
+    // gpt에게 요청
+    const { answer } = await this.chatGptService.createChat([userrMessage]);
+    return answer;
+  }
 
   async getAllProject() {
     const project = await this.projDAL.findAll();
