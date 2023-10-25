@@ -44,6 +44,14 @@ export class AidocentController {
 
   /** --- Project --------------------------------------------- */
 
+  @ApiOperation({ summary: '정보 검색' })
+  @Get('/search/test')
+  searchTest() {
+    return this.aidocentService.searchTest();
+  }
+
+  /** --- Project --------------------------------------------- */
+
   @ApiOperation({ summary: '모든 프로젝트 정보 가져오기' })
   @ApiResponse({ status: 200, type: ApiGetProjAllRes })
   @Get('/proj/all')

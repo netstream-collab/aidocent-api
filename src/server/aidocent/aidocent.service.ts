@@ -23,6 +23,7 @@ import { ClovaVoiceService } from '../utils/clova/clova-voice.service';
 import { ChatGptMessage } from '../utils/open-ai/types/chat-message.type';
 import { WhisperService } from '../utils/open-ai/whisper.service';
 import { ClovaCSRService } from '../utils/clova/clova-csr.service';
+import { EtriService } from '../utils/etri/etri.service';
 
 @Injectable()
 export class AidocentService {
@@ -32,10 +33,13 @@ export class AidocentService {
     private chatGptService: ChatGptService,
     private whisperService: WhisperService,
     private clovaVoiceService: ClovaVoiceService,
+    private etriService: EtriService,
     private clovaCSRService: ClovaCSRService,
     private chatHisDAL: ChatHisDAL,
     private projDAL: ProjDAL,
   ) {}
+
+  async searchTest() {}
 
   async getAllProject() {
     const project = await this.projDAL.findAll();
@@ -252,9 +256,8 @@ export class AidocentService {
   }
 
   async askToAiWithProjectByVoice(response: Response, project: IProj, body: ChatAskToAiByVoiceDTO, questionVoiceFile: Express.Multer.File) {
-    console.log('questionVoiceFile: ', questionVoiceFile);
-    // const questionText = await this.whisperService.transcriptions(questionVoiceFile);
-    const questionText = await this.clovaCSRService.stt(questionVoiceFile);
+    const questionText = await this.whisperService.transcriptions(questionVoiceFile);
+    // const questionText = await this.clovaCSRService.stt(questionVoiceFile);
     this.logger.debug('questionText: ', questionText);
 
     const questionBody = {
