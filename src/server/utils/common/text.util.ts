@@ -114,3 +114,19 @@ export function queryStringify(obj: any, useQm = false): string {
   }
   return qs;
 }
+
+// 'base64url' to 'base64' 변환 함수
+export function base64urlToBase64(base64url: string): string {
+  return base64url
+    .replace(/-/g, '+') // '-'를 '+'로 변환
+    .replace(/_/g, '/'); // '_'를 '/'로 변환
+}
+
+export function base64ToUtf8(base64: string): string {
+  return Buffer.from(base64, 'base64').toString('utf-8');
+}
+
+export function base64urlToUtf8(base64url: string): string {
+  const base64String = base64urlToBase64(base64url);
+  return base64ToUtf8(base64String);
+}

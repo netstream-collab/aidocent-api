@@ -24,6 +24,28 @@ export type CSEquery = {
   dateRestrict?: string;
 
   /**
+   * 검색결과의 모든 문서에 포함되어야 하는 구문
+   */
+  exactTerms?: string;
+
+  /**
+   *검색결과의 어떤 문서에서도 표시되어서는 안 되는 단어 또는 구문을 식별합니다.
+   */
+  excludeTerms?: string;
+
+  /**
+   * 지정된 확장자를 가진 파일로 결과를 제한합니다.
+   */
+  fileType?: string;
+
+  /**
+   * 중복 콘텐츠 필터를 사용 설정 또는 사용 중지합니다.
+   * - 0: 중복 콘텐츠 필터를 사용 중지합니다.
+   * - 1: 중복 콘텐츠 필터를 사용 설정합니다.
+   */
+  filter?: string;
+
+  /**
    * 최종 사용자의 위치정보입니다.
    * - 대한민국: kr
    * @link https://developers.google.com/custom-search/docs/json_api_reference?hl=ko#countryCodes
@@ -57,6 +79,9 @@ export type CSEquery = {
 
   imgType?: 'clipart' | 'face' | 'lineart' | 'stock' | 'photo' | 'animated';
 
+  /**
+   * 모든 검색결과에 특정 URL 링크가 포함되도록 지정
+   */
   linkSite?: string;
 
   /**

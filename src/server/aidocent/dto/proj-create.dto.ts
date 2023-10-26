@@ -25,4 +25,9 @@ export class ProjCreateDTO {
   @IsString()
   @IsOptional()
   readonly memo: string;
+
+  @ApiPropertyOptional({ title: '프로젝트 태그', description: '쉼표로 구분하는 키워드 문자열', example: '넷스트림,상현태,chatRPG' })
+  @IsString()
+  @IsOptional()
+  readonly tags: string;
 }

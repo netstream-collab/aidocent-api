@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import RestApi from '../common/restApi.util';
 import { queryStringify } from '../common/text.util';
 import { CSEquery } from './custom-search-json.type';
+import { classToObjectByKeys } from '../common/object.util';
 
 @Injectable()
 export class CustomSearchJsonService {
@@ -26,5 +27,11 @@ export class CustomSearchJsonService {
     });
     const response = await RestApi.request('GET', `https://www.googleapis.com/customsearch/v1?${queryString}`);
     return response;
+  }
+
+  format(items: any[]) {
+    return items.map((item) => {
+      return classToObjectByKeys(item, 'title', 'link', 'snippet');
+    });
   }
 }

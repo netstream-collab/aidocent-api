@@ -4,7 +4,7 @@
     "cookie_domains": []
   },
   "dev": {
-    "cors_origins": [],
+    "cors_origins": ["https://aidocent-api.netstream.co.kr", "https://aidocent-cms.netstream.co.kr"],
     "cookie_domains": []
   },
   "qa": {

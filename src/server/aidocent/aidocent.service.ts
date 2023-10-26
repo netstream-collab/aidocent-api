@@ -15,7 +15,7 @@ import { getNow } from '../utils/common/date.util';
 import * as CryptoJS from 'crypto-js';
 
 import { Cookie } from '../constants/response/cookie';
-import { createUUID, isEmpty } from '../utils/common/text.util';
+import { base64urlToUtf8, createUUID, isEmpty } from '../utils/common/text.util';
 import { IProj } from './dal/dto/proj.dto';
 import Codes from '../constants/codes';
 import { ProjUpdateDTO } from './dto/proj-update.dto';
@@ -42,16 +42,15 @@ export class AidocentService {
   ) {}
 
   async searchTest() {
-    const searchResult = await this.customSearchJsonService.search('작가 박봉수', {
-      num: 3,
+    const searchResult = await this.customSearchJsonService.search('작가 박봉수 탈영역우정국 꿈 몽상가들의 모임 드림 옥션', {
+      num: 5,
     });
-
-    const search = searchResult.items;
-    const prompt = `\`\`\`\n${JSON.stringify(search)}\n\`\`\`위 내용을 요약 정리해라`;
+    const search = this.customSearchJsonService.format(searchResult.items);
+    const prompt = `\`\`\`\n${JSON.stringify(search)}\n\`\`\`위 내용을 개괄식으로 요약 정리해라`;
     const userrMessage = new ChatGptMessage('user', prompt);
     // gpt에게 요청
     const { answer } = await this.chatGptService.createChat([userrMessage]);
-    return answer;
+    return new BasicResponse().status(200).message('').data({ answer, search });
   }
 
   async getAllProject() {
@@ -67,6 +66,7 @@ export class AidocentService {
       description: body.description,
       memo: body.memo,
       userPrompt: body.userPrompt,
+      tags: body.tags || '',
     });
 
     const restApiKey = project.uuid.slice(0, 2) + '-' + project.projCode;
@@ -126,14 +126,9 @@ export class AidocentService {
 
   async startNewConversation(response: Response, projId: number) {
     // Encrypt
-    const origin = `${projId}-${getNow('YYMMDD_HHmmssSSS')}`;
-    const convoSessionId = CryptoJS.RC4.encrypt(origin, process.env.CONVO_SESSION_KEY).toString();
-
-    // Decrypt
-    // const bytes = CryptoJS.RC4.decrypt(convoSessionId, process.env.CONVO_SESSION_KEY);
-    // const originalText = bytes.toString(CryptoJS.enc.Utf8);
-    // this.logger.debug(originalText);
-
+    const origin = `${projId}-${getNow('YYMMDD_HHmmssSSS')}-${createUUID().slice(-6)}`;
+    const convoSessionId = Buffer.from(origin).toString('base64url');
+    // const decoded = base64urlToUtf8(convoSessionId);
     // cookie setting
     Cookie.set(response, 'aidocent-convo-session-id', convoSessionId, {
       httpOnly: true,

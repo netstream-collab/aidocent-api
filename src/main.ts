@@ -52,6 +52,9 @@ async function bootstrap() {
   app.setBaseViewsDir(join(__dirname, '..', 'src', 'view'));
   app.setViewEngine('ejs');
 
+  SwaggerUtil.security(app, {
+    [process.env.SWAGGER_USER]: process.env.SWAGGER_PWD,
+  });
   SwaggerUtil.init(app);
 
   const AppPort = +process.env.PORT || 4000;

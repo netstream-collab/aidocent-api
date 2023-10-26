@@ -37,6 +37,13 @@ export class IProj {
   @Expose({ name: 'sREST_API_KEY' })
   restApiKey?: string;
 
+  /**
+   * 쉼표로 구분하는 문자열
+   */
+  @Expose({ name: 'sTAGS' })
+  @Transform(({ value }) => value || '', { toClassOnly: true })
+  tags?: string;
+
   /* Date ------------------------------------------------------------------ */
 
   @Expose({ name: 'dCREATE' })

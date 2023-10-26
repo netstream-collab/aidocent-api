@@ -1,7 +1,20 @@
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as expressBasicAuth from 'express-basic-auth';
 
 export class SwaggerUtil {
+  static readonly path = 'doc';
+  static security(app: INestApplication, users: { [id: string]: string }) {
+    //
+    app.use(
+      [`/${this.path}`],
+      expressBasicAuth({
+        challenge: true,
+        users: users,
+      }),
+    );
+  }
+
   static init(app: INestApplication) {
     const serverInfo = SwaggerUtil.getServerInfoFromNodeEnv();
     const config = new DocumentBuilder()
@@ -20,7 +33,7 @@ export class SwaggerUtil {
       .build();
 
     const document = SwaggerModule.createDocument(app, config, {});
-    SwaggerModule.setup('doc', app, document, {
+    SwaggerModule.setup(this.path, app, document, {
       customSiteTitle: 'AI docent API Doc',
       swaggerOptions: {
         persistAuthorization: true,

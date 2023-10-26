@@ -13,6 +13,8 @@ export class TB_PROJ {
   @Column() tMEMO: string;
   @Column() sREST_API_KEY: string;
 
+  @Column() sTAGS: string;
+
   @Column() dCREATE: string;
   @Column() dUPDATE: string;
   @Column() dDELETE: string;
