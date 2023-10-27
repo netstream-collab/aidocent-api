@@ -44,7 +44,7 @@ export class ChatGptService {
         },
       );
 
-      this.logger.debug(completion);
+      this.logger.debug('chatGPT usage tokens: ', completion.usage);
       const answer = completion.choices[0]?.message;
       return { completion, answer };
     } catch (error) {

@@ -25,6 +25,7 @@ import { WhisperService } from '../utils/open-ai/whisper.service';
 import { ClovaCSRService } from '../utils/clova/clova-csr.service';
 import { EtriService } from '../utils/etri/etri.service';
 import { CustomSearchJsonService } from '../utils/google/custom-search-json.service';
+import { SearchTagsSummaryDTO } from './dto/search-tags-summary.dto';
 
 @Injectable()
 export class AidocentService {
@@ -118,6 +119,30 @@ export class AidocentService {
   async getAllChatsOfConvoSession(convoSessionId: string) {
     const chats = await this.chatHisDAL.findByConviSessionId(convoSessionId, 0);
     return new BasicResponse().status(200).message('').data({ chats });
+  }
+
+  async searchTagsSummary(response, body: SearchTagsSummaryDTO) {
+    const searchQuery = body.tags?.join(' ');
+    const searchResult = await this.customSearchJsonService.search(searchQuery, {
+      num: 10,
+    });
+    const search = this.customSearchJsonService.format(searchResult.items);
+    const prompt = `\`\`\`\n${JSON.stringify(search)}\n\`\`\`내용을 개괄식으로 요약 정리해`;
+    const userrMessage = new ChatGptMessage('user', prompt);
+    if (body.resType === 'text-stream') {
+      // gpt에게 요청
+      const answerStream = await this.chatGptService.createChatStream([userrMessage]);
+      let answerContent = '';
+      for await (const part of answerStream) {
+        const content = part.choices[0]?.delta?.content || '';
+        answerContent += content;
+        response.write(content);
+      }
+    } else {
+      // gpt에게 요청
+      const { answer } = await this.chatGptService.createChat([userrMessage]);
+      return new BasicResponse().status(200).message('').data({ prompt: answer.content });
+    }
   }
 
   async getProjectInfoByRestApiKey(project) {
@@ -288,6 +313,9 @@ export class AidocentService {
   }
 
   async generateAiChatCompletionMessages(project: IProj, body: ChatAskToAiDTO) {
+    // 프로젝트 정보에 대한 프롬포트
+    const infoPrompt = new ChatGptMessage('system', 'title:' + project.name + '\n' + 'description:' + (project.description || ''));
+
     // 유저가 설정한 프롬포트 가져오기
     const prompt = project.userPrompt ? new ChatGptMessage('system', project.userPrompt) : null;
     // 최신 유저 메시지 내용
@@ -296,6 +324,7 @@ export class AidocentService {
     // 기존 메시지 내역 가져오기
     const messages = (await this.chatHisDAL.findByConviSessionIdForGpt(project.projId, body.convoSessionId, 10)).reverse();
     if (prompt) messages.unshift(prompt);
+    messages.unshift(infoPrompt);
     messages.push(userrMessage);
 
     // 답변 길이 설정하기

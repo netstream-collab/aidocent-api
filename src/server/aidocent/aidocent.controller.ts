@@ -10,6 +10,7 @@ import {
   Post,
   Query,
   Res,
+  Response,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -19,7 +20,6 @@ import { AidocentService } from './aidocent.service';
 import { ChatAskToAiByVoiceDTO, ChatAskToAiDTO } from './dto/chat-ask-to-ai.dto';
 import { ProjCreateDTO } from './dto/proj-create.dto';
 import { RequestIP } from '../utils/network/requestIp.decorator';
-import { Response } from 'express';
 import { RestApiKeyGuard } from './auth/guard/restApiKey.guard';
 import { Project } from './auth/decorator/projcet.decorator';
 import { ProjUpdateDTO } from './dto/proj-update.dto';
@@ -36,6 +36,7 @@ import {
   ApiPostProjRenewRestApiKey,
 } from '../utils/swagger/schemas/api-response.type';
 import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
+import { SearchTagsSummaryDTO } from './dto/search-tags-summary.dto';
 
 @ApiTags('AI docent')
 @Controller('')
@@ -112,6 +113,13 @@ export class AidocentController {
   /** --- AIdocnet Rest Api --------------------------------------------- */
 
   @ApiBearerAuth('aidocent-rest-api-key')
+  @ApiOperation({ summary: '태그 기반 정보 검색후 요약' })
+  @Post('/search/tags/summary')
+  searchTagsSummary(@Response({ passthrough: true }) response, @Body() body: SearchTagsSummaryDTO) {
+    return this.aidocentService.searchTagsSummary(response, body);
+  }
+
+  @ApiBearerAuth('aidocent-rest-api-key')
   @ApiOperation({ summary: 'rest api key를 통해 프로젝트 정보 가져오기', description: '' })
   @ApiResponse({ status: 200, type: ApiGetProjAllRes })
   @Get('/aid/proj/info')
@@ -126,7 +134,7 @@ export class AidocentController {
   @Post('/aid/chat/new/convo')
   @HttpCode(200)
   @UseGuards(RestApiKeyGuard)
-  startNewConversation(@Res({ passthrough: true }) response: Response, @Project('projId') projId: number) {
+  startNewConversation(@Res({ passthrough: true }) response, @Project('projId') projId: number) {
     return this.aidocentService.startNewConversation(response, projId);
   }
 
