@@ -59,7 +59,7 @@ func_backup_current_env_file()
   # nest build는 .env만 적용이 되므로, .env 내용을 _backup으로 복사해둔다.
   if [ "$ENV_FILENAME" != "$DEFAULT_ENV" ]
   then
-    mv $DEFAULT_ENV .env_backup
+    mv $DEFAULT_ENV .env.backup
     cp $ENV_FILENAME .env 
   fi
 
