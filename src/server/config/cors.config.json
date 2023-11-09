@@ -12,7 +12,7 @@
     "cookie_domains": []
   },
   "prod": {
-    "cors_origins": [],
+    "cors_origins": ["https://aboundry-hyundai2023.ai-docent.com/"],
     "cookie_domains": []
   }
 }
