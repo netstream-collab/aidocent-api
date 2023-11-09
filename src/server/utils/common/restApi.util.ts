@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosPromise } from 'axios';
 import _l from 'src/server/constants/logger/CommonLogger';
 import { isEmpty } from './text.util';
 type TMethod = 'get' | 'post' | 'fetch' | 'delete' | 'GET' | 'POST' | 'FETCH' | 'DELETE';
@@ -36,11 +36,11 @@ export default class RestApi {
     if (getRawRes) {
       return response;
     } else {
-      return response.data;
+      return response.data as any;
     }
   }
 
-  static async requestStream(method: TMethod, url: string, body?: any, headers?: any, getRawRes?: boolean) {
+  static async requestStream(method: TMethod, url: string, body?: any, headers?: any) {
     function logResponse() {
       const { status, statusText, headers, data } = response;
       const resLog = { status, statusText, headers, data };
@@ -68,10 +68,7 @@ export default class RestApi {
     });
 
     logResponse();
-    if (getRawRes) {
-      return response;
-    } else {
-      return response.data;
-    }
+
+    return response;
   }
 }

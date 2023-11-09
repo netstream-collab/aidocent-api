@@ -173,7 +173,8 @@ export class AidocentController {
   @HttpCode(200)
   @Post('/aid/chat/ask/tts')
   @UseGuards(RestApiKeyGuard)
-  askToAiWithProjectReturnTTS(@Res({ passthrough: true }) res, @Body() body: ChatAskToAiDTO, @Project() project) {
+  askToAiWithProjectReturnTTS(@Res() res, @Body() body: ChatAskToAiDTO, @Project() project) {
+    // { passthrough: true } 제거해야 mp3 stream이 끊기지 않고 전달된다.
     return this.aidocentService.askToAiWithProjectReturnTTS(res, project, body);
   }
 

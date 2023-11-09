@@ -5,7 +5,7 @@ import { ChatAskToAiByVoiceDTO, ChatAskToAiDTO } from './dto/chat-ask-to-ai.dto'
 import ChatHisDAL from './dal/layers/chatHis.dal';
 import { ProjCreateDTO } from './dto/proj-create.dto';
 import ProjDAL from './dal/layers/proj.dal';
-import { createReadStream } from 'fs';
+import { createReadStream, createWriteStream } from 'fs';
 import { Readable } from 'stream';
 import _l from '../constants/logger/CommonLogger';
 import { Response, response } from 'express';
@@ -251,18 +251,29 @@ export class AidocentService {
     this.validateConvoSessionId(body.convoSessionId);
     const { userrMessage, messages } = await this.generateAiChatCompletionMessages(project, body);
     // setting for tts
-    messages.push(new ChatGptMessage('system', '2000자 이하로 tts로 변환하기 쉽도록 답변해.'));
+    messages.push(new ChatGptMessage('system', '1000자 이하로 tts로 변환하기 쉽도록 답변해.'));
 
     // gpt에게 요청
     const { answer } = await this.chatGptService.createChat(messages);
     // 음성 파일로 전달해야함
     const ttsRes = await this.clovaVoiceService.makeTTS(answer.content);
+
     response.set({
       'content-type': ttsRes.headers['content-type'],
+      'transfer-encoding': ttsRes.headers['transfer-encoding'],
+      playtime: ttsRes.headers['playtime'],
       'aidocent-answer-text': encodeURI(answer.content),
       'aidocent-question-text': encodeURI(userrMessage.content),
     });
+
+    /**
+     * ? tts를 길게 생성할경우, 브라우저에서 재생되다 끊기는 오류가 발생했었음 - 시간이 지난뒤 해결됨
+     * ? response pipe를 가장 먼저해야 write after end 오류가 발생하지 않는다.
+     */
     ttsRes.data.pipe(response); // response를 보냄
+
+    // const writeStream = createWriteStream('./tts1.mp3');
+    // ttsRes.data.pipe(writeStream);
 
     await this.chatHisDAL.bulkCreate([
       {
@@ -322,7 +333,7 @@ export class AidocentService {
     const userrMessage = new ChatGptMessage('user', body.question);
 
     // 기존 메시지 내역 가져오기
-    const messages = (await this.chatHisDAL.findByConviSessionIdForGpt(project.projId, body.convoSessionId, 10)).reverse();
+    const messages = (await this.chatHisDAL.findByConviSessionIdForGpt(project.projId, body.convoSessionId, 4)).reverse();
     if (prompt) messages.unshift(prompt);
     messages.unshift(infoPrompt);
     messages.push(userrMessage);
