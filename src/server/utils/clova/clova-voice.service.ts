@@ -18,19 +18,39 @@ export class ClovaVoiceService {
       speed: 0,
       format: 'mp3',
     };
-    const response = await RestApi.requestStream(
-      'post',
-      this.RequestUrl,
-      this.queryStringify(requestData),
-      {
+    const response = await RestApi.requestStream('post', this.RequestUrl, this.queryStringify(requestData), {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'X-NCP-APIGW-API-KEY-ID': this.ClientId, // 애플리케이션 등록 시 발급받은 client id값
+      'X-NCP-APIGW-API-KEY': this.ClientSecret, //
+    });
+    // MP3 또는 WAV 바이너리 데이터
+    return response;
+  }
+
+  async makeTTS_v2(text: string) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const request = require('request');
+    const options = {
+      url: this.RequestUrl,
+      form: {
+        speaker: 'nara', // 음성 합성에 사용할 목소리 종류
+        // speaker: 'dara-danna', // 음성 합성에 사용할 목소리 종류
+        text: text.replace(/\n/g, ''), // 음성 합성할 문장 - 최대 2,000자까지 음성 합성
+        volume: 0, //
+        speed: 0,
+        format: 'mp3',
+      },
+      headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'X-NCP-APIGW-API-KEY-ID': this.ClientId, // 애플리케이션 등록 시 발급받은 client id값
         'X-NCP-APIGW-API-KEY': this.ClientSecret, //
       },
-      true,
-    );
-    // MP3 또는 WAV 바이너리 데이터
-    return response;
+    };
+
+    return request.post(options).on('response', function (response) {
+      console.log(response.statusCode); // 200
+      console.log(response.headers['content-type']);
+    });
   }
 
   /**
