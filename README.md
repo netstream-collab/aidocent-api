@@ -1,7 +1,7 @@
 # AI Docent Micro
 
-![캡처2](./readme/sample01.png)
 ![캡처3](./readme/sample02.png)
+![캡처2](./readme/sample01.png)
 
 #### Script
 
@@ -27,8 +27,10 @@ $ npm run deploy:dev
 
 #### API document
 
-![캡처1](./readme/swagger.png)
-
 - swagger를 사용해 관리
 - ID/PASSWORD 입력
   - `.env` 환경파일에 있는 `SWAGGER_USER/SWAGGER_PWD` 참고
+- 접근 제한이 있는 API일 경우 해더에 Project Rest Api Key를 넣어 요청해야한다.
+  - 자세한건 Swagger 참고
+
+![캡처1](./readme/swagger.png)
