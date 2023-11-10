@@ -4,7 +4,7 @@
     "cookie_domains": []
   },
   "dev": {
-    "cors_origins": ["https://aidocent-api.netstream.co.kr", "https://aidocent-cms.netstream.co.kr", "https://aboundry-hyundai2023.ai-docent.com/"],
+    "cors_origins": ["https://aidocent-api.netstream.co.kr", "https://aidocent-cms.netstream.co.kr", "https://aboundry-hyundai2023.ai-docent.com"],
     "cookie_domains": []
   },
   "qa": {
