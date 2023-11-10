@@ -22,7 +22,7 @@ export class ChatAskToAiDTO {
   readonly length?: string;
 
   @ApiPropertyOptional({
-    title: '답변길이',
+    title: '리턴 답변 타입',
     description: 'ai가 답변할 리턴 타입',
     example: 'text',
     enum: ['text', 'text-stream', 'tts'],
@@ -30,6 +30,17 @@ export class ChatAskToAiDTO {
   @IsString()
   @IsOptional()
   readonly resType?: string;
+
+  @ApiPropertyOptional({
+    title: 'LLM 모델 타입',
+    description: 'AI로 사용할 LLM 종류',
+    example: Codes.LLMModels[0],
+    enum: Codes.LLMModels,
+    default: Codes.LLMModels[0],
+  })
+  @IsString()
+  @IsOptional()
+  readonly model?: string;
 }
 
 export class ChatAskToAiByVoiceDTO extends OmitType(ChatAskToAiDTO, ['question']) {

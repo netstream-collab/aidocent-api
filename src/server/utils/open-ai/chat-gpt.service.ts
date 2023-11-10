@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OpenAI } from 'openai';
 import { isEmpty } from '../common/text.util';
 import { ChatGptMessage } from './types/chat-message.type';
+import Codes from 'src/server/constants/codes';
 
 @Injectable()
 export class ChatGptService {
@@ -11,16 +12,16 @@ export class ChatGptService {
 
   private readonly timeout = 30 * 1000;
 
-  /**
-   * gpt-4, gpt-4-0613, gpt-3.5-turbo
-   * @link https://platform.openai.com/docs/models/model-endpoint-compatibility
-   */
-  private readonly model = 'gpt-3.5-turbo';
-
   constructor() {
     this.openai = new OpenAI({
       apiKey: this.REST_KEY,
     });
+  }
+
+  async listModel() {
+    const list = await this.openai.models.list();
+    this.logger.debug(list);
+    return list;
   }
 
   /**
@@ -30,13 +31,16 @@ export class ChatGptService {
    * @param messages
    * @param timeoutCb
    */
-  async createChat(messages: ChatGptMessage[], timeoutCb?: (err: any) => any) {
+  async createChat(messages: ChatGptMessage[], reqModel?: string, timeoutCb?: (err: any) => any) {
     try {
       if (isEmpty(messages)) return null;
+      const model = this.getModel(reqModel);
       this.logger.debug('> GPT messages: ', messages);
+      this.logger.debug('> GPT model: ', model);
+
       const completion = await this.openai.chat.completions.create(
         {
-          model: this.model,
+          model: model,
           messages: messages,
         },
         {
@@ -65,12 +69,15 @@ export class ChatGptService {
     }
   }
 
-  async createChatStream(messages: ChatGptMessage[]) {
+  async createChatStream(messages: ChatGptMessage[], reqModel?: string) {
     if (isEmpty(messages)) return null;
+    const model = this.getModel(reqModel);
     this.logger.debug('> GPT messages: ', messages);
+    this.logger.debug('> GPT model: ', model);
+
     const stream = await this.openai.chat.completions.create(
       {
-        model: this.model,
+        model: model,
         messages: messages,
         stream: true,
       },
@@ -79,5 +86,16 @@ export class ChatGptService {
       },
     );
     return stream;
+  }
+
+  /**
+   * gpt-4, gpt-4-0613, gpt-3.5-turbo
+   * @link https://platform.openai.com/docs/models/model-endpoint-compatibility
+   */
+  getModel(model: string) {
+    if (!Codes.LLMModels.includes(model)) {
+      return Codes.LLMModels[0];
+    }
+    return model;
   }
 }

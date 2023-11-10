@@ -32,7 +32,7 @@ export default class RestApi {
       headers,
     });
 
-    logResponse();
+    // logResponse();
     if (getRawRes) {
       return response;
     } else {

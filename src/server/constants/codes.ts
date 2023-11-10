@@ -20,6 +20,12 @@ const Codes = {
     TEXT: 'CHRT_TEXT',
     VOICE: 'CHRT_VOICE',
   },
+
+  /**
+   * 0번째 인덱스가 기본값이다.
+   *  @link https://platform.openai.com/docs/models/model-endpoint-compatibility
+   */
+  LLMModels: ['gpt-4-1106-preview', 'gpt-3.5-turbo'] as string[],
 } as const;
 
 export default Codes;
