@@ -173,56 +173,20 @@ export class AidocentService {
   }
 
   async askToAiWithProject(project: IProj, body: ChatAskToAiDTO) {
-    this.validateConvoSessionId(body.convoSessionId);
+    this.logger.log('Ask to ai with project - start');
+    // this.validateConvoSessionId(body.convoSessionId);
     const { userrMessage, messages } = await this.generateAiChatCompletionMessages(project, body);
+    this.logger.log('Ask to ai with project - done to get chat history');
+
     // gpt에게 요청
-    const { answer } = await this.chatGptService.createChat(messages);
+    this.logger.log('Ask to ai with project - ask gpt');
+    const { answer } = await this.chatGptService.createChat(messages, body.model);
+    this.logger.log('Ask to ai with project - done to ask gpt');
+
     // 챗 히스토리 생성
-    await this.chatHisDAL.bulkCreate([
-      {
-        uuid: createUUID(),
-        projId: project.projId,
-        convoSessionId: body.convoSessionId,
-        type: '',
-        status: Codes.ChatHisStatus.VALID,
-        speakerRole: userrMessage.role,
-        content: userrMessage.content,
-      },
-      {
-        uuid: createUUID(),
-        projId: project.projId,
-        convoSessionId: body.convoSessionId,
-        type: '',
-        status: Codes.ChatHisStatus.VALID,
-        speakerRole: answer.role,
-        content: answer.content,
-        resType: Codes.ChatHisResType.TEXT,
-        errorMsg: '',
-      },
-    ]);
-
-    return new BasicResponse().status(200).message('').data({ question: userrMessage, answer });
-  }
-
-  async askToAiWithProjectByStreaming(res: Response, project: IProj, body: ChatAskToAiDTO) {
-    // convoSessionId 유효성 검사
-    this.validateConvoSessionId(body.convoSessionId);
-    const { userrMessage, messages } = await this.generateAiChatCompletionMessages(project, body);
-
-    // gpt에게 요청
-    const answerStream = await this.chatGptService.createChatStream(messages);
-    let answerContent = '';
-    for await (const part of answerStream) {
-      const content = part.choices[0]?.delta?.content || '';
-      answerContent += content;
-      res.write(content);
-    }
-
-    // 스트림 처리가 완료되면 응답 종료
-    res.end(() => {
-      // 챗 히스토리 생성
-      _l.name('RES').log('end');
-      this.chatHisDAL.bulkCreate([
+    if (!isEmpty(body.convoSessionId)) {
+      this.logger.log('Ask to ai with project - create chat history');
+      await this.chatHisDAL.bulkCreate([
         {
           uuid: createUUID(),
           projId: project.projId,
@@ -238,25 +202,79 @@ export class AidocentService {
           convoSessionId: body.convoSessionId,
           type: '',
           status: Codes.ChatHisStatus.VALID,
-          speakerRole: 'assistant',
-          content: answerContent,
+          speakerRole: answer.role,
+          content: answer.content,
           resType: Codes.ChatHisResType.TEXT,
           errorMsg: '',
         },
       ]);
+      this.logger.log('Ask to ai with project - done to chat history');
+    }
+    return new BasicResponse().status(200).message('').data({ question: userrMessage, answer });
+  }
+
+  async askToAiWithProjectByStreaming(res: Response, project: IProj, body: ChatAskToAiDTO) {
+    // this.validateConvoSessionId(body.convoSessionId);
+    const { userrMessage, messages } = await this.generateAiChatCompletionMessages(project, body);
+
+    // gpt에게 요청
+    const answerStream = await this.chatGptService.createChatStream(messages, body.model);
+    let answerContent = '';
+    for await (const part of answerStream) {
+      const content = part.choices[0]?.delta?.content || '';
+      answerContent += content;
+      res.write(content);
+    }
+
+    // 스트림 처리가 완료되면 응답 종료
+    res.end(() => {
+      _l.name('RES').log('end');
+      if (!isEmpty(body.convoSessionId)) {
+        // 챗 히스토리 생성
+        this.chatHisDAL.bulkCreate([
+          {
+            uuid: createUUID(),
+            projId: project.projId,
+            convoSessionId: body.convoSessionId,
+            type: '',
+            status: Codes.ChatHisStatus.VALID,
+            speakerRole: userrMessage.role,
+            content: userrMessage.content,
+          },
+          {
+            uuid: createUUID(),
+            projId: project.projId,
+            convoSessionId: body.convoSessionId,
+            type: '',
+            status: Codes.ChatHisStatus.VALID,
+            speakerRole: 'assistant',
+            content: answerContent,
+            resType: Codes.ChatHisResType.TEXT,
+            errorMsg: '',
+          },
+        ]);
+      }
     });
   }
 
   async askToAiWithProjectReturnTTS(response: Response, project: IProj, body: ChatAskToAiDTO) {
-    this.validateConvoSessionId(body.convoSessionId);
+    this.logger.log('Ask to ai with project (TTS) - start');
+    // this.validateConvoSessionId(body.convoSessionId);
     const { userrMessage, messages } = await this.generateAiChatCompletionMessages(project, body);
+    this.logger.log('Ask to ai with project - done to get chat history');
+
     // setting for tts
     messages.push(new ChatGptMessage('system', '1000자 이하로 tts로 변환하기 쉽도록 답변해.'));
 
     // gpt에게 요청
-    const { answer } = await this.chatGptService.createChat(messages);
+    this.logger.log('Ask to ai with project (TTS) - ask gpt');
+    const { answer } = await this.chatGptService.createChat(messages, body.model);
+    this.logger.log('Ask to ai with project - done to ask gpt');
+
     // 음성 파일로 전달해야함
+    this.logger.log('Ask to ai with project (TTS)  - make tts start');
     const ttsRes = await this.clovaVoiceService.makeTTS(answer.content);
+    this.logger.log('Ask to ai with project (TTS) - make tts done');
 
     response.set({
       'content-type': ttsRes.headers['content-type'],
@@ -272,31 +290,32 @@ export class AidocentService {
      */
     ttsRes.data.pipe(response); // response를 보냄
 
-    // const writeStream = createWriteStream('./tts1.mp3');
-    // ttsRes.data.pipe(writeStream);
-
-    await this.chatHisDAL.bulkCreate([
-      {
-        projId: project.projId,
-        uuid: createUUID(),
-        convoSessionId: body.convoSessionId,
-        type: '',
-        status: Codes.ChatHisStatus.VALID,
-        speakerRole: userrMessage.role,
-        content: userrMessage.content,
-      },
-      {
-        projId: project.projId,
-        uuid: createUUID(),
-        convoSessionId: body.convoSessionId,
-        type: '',
-        status: Codes.ChatHisStatus.VALID,
-        speakerRole: answer.role,
-        content: answer.content,
-        resType: Codes.ChatHisResType.VOICE,
-        errorMsg: '',
-      },
-    ]);
+    if (!isEmpty(body.convoSessionId)) {
+      this.logger.log('Ask to ai with project (TTS) - create chat history');
+      await this.chatHisDAL.bulkCreate([
+        {
+          projId: project.projId,
+          uuid: createUUID(),
+          convoSessionId: body.convoSessionId,
+          type: '',
+          status: Codes.ChatHisStatus.VALID,
+          speakerRole: userrMessage.role,
+          content: userrMessage.content,
+        },
+        {
+          projId: project.projId,
+          uuid: createUUID(),
+          convoSessionId: body.convoSessionId,
+          type: '',
+          status: Codes.ChatHisStatus.VALID,
+          speakerRole: answer.role,
+          content: answer.content,
+          resType: Codes.ChatHisResType.VOICE,
+          errorMsg: '',
+        },
+      ]);
+      this.logger.log('Ask to ai with project (TTS) - done to chat history');
+    }
   }
 
   async askToAiWithProjectByVoice(response: Response, project: IProj, body: ChatAskToAiByVoiceDTO, questionVoiceFile: Express.Multer.File) {
@@ -333,7 +352,10 @@ export class AidocentService {
     const userrMessage = new ChatGptMessage('user', body.question);
 
     // 기존 메시지 내역 가져오기
-    const messages = (await this.chatHisDAL.findByConviSessionIdForGpt(project.projId, body.convoSessionId, 4)).reverse();
+    // body.convoSessionId이 없으면 히스토리를 가져오지 않는다.
+    const messages = !isEmpty(body.convoSessionId)
+      ? (await this.chatHisDAL.findByConviSessionIdForGpt(project.projId, body.convoSessionId, 4)).reverse()
+      : [];
     if (prompt) messages.unshift(prompt);
     messages.unshift(infoPrompt);
     messages.push(userrMessage);
