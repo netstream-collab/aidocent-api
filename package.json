@@ -9,6 +9,7 @@
     "prebuild": "rimraf dist",
     "build": "nest build",
     "build:dev": "./deploy/build-env.sh -e .env.dev ",
+    "build:prod": "./deploy/build-env.sh -e .env.prod ",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start --watch",
     "start:local": " ./deploy/start-env.sh -e .env.local",

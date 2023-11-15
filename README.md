@@ -23,6 +23,12 @@ $ npm run build:dev
 
 # .env.dev 환경으로 배포
 $ npm run deploy:dev
+
+
+# ncp production 환경
+$ npm run build:prod
+$ pm2 start
+$ pm2 reload aidocent-api
 ```
 
 #### API document
