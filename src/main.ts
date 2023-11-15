@@ -59,9 +59,9 @@ async function bootstrap() {
 
   const AppPort = +process.env.PORT || 4000;
   await app.listen(AppPort, () => {
-//    if (['dev', 'qa', 'prod'].includes(process.env.NODE_ENV)) {
-//      process.send('ready');
-//    }
+    if (['prod'].includes(process.env.NODE_ENV)) {
+      process.send('ready');
+    }
     _l.name('BOOT').info(`Listening on ${AppPort} port! 🚀`);
     _l.name('BOOT').info(`NODE_ENV     : ${process.env.NODE_ENV}`);
     _l.name('BOOT').info(`DEBUG_MODE   : ${process.env.DEBUG}`);
