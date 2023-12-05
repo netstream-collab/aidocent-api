@@ -1,6 +1,6 @@
 {
   "local": {
-    "cors_origins": ["http://localhost:4000", "http://localhost:3333", "http://localhost:3000"],
+    "cors_origins": ["http://localhost:4000", "http://localhost:3333", "http://localhost:3000", "http://localhost:3001"],
     "cookie_domains": []
   },
   "dev": {
@@ -21,6 +21,7 @@
   "prod": {
     "cors_origins": [
       "https://aboundry-hyundai2023.ai-docent.com/",
+      "https://service.ai-docent.com",
       "https://cms.ai-docent.com",
       "https://api.ai-docent.com",
       "https://www.ai-docent.com",
