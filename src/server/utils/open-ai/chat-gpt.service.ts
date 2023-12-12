@@ -10,7 +10,7 @@ export class ChatGptService {
   private logger = new Logger(ChatGptService.name);
   private readonly REST_KEY = process.env.OPENAI_API_KEY;
 
-  private readonly timeout = 30 * 1000;
+  private readonly timeout = 60 * 1000;
 
   constructor() {
     this.openai = new OpenAI({
