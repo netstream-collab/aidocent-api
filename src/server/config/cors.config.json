@@ -21,6 +21,7 @@
   "prod": {
     "cors_origins": [
       "https://aboundry-hyundai2023.ai-docent.com/",
+      "https://aidocent-cms.netstream.co.kr",
       "https://service.ai-docent.com",
       "https://cms.ai-docent.com",
       "https://api.ai-docent.com",
