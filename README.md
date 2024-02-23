@@ -40,3 +40,10 @@ $ pm2 reload aidocent-api
   - 자세한건 Swagger 참고
 
 ![캡처1](./readme/swagger.png)
+
+
+
+### CORS
+
+https://inpa.tistory.com/entry/AXIOS-%F0%9F%93%9A-CORS-%EC%BF%A0%ED%82%A4-%EC%A0%84%EC%86%A1withCredentials-%EC%98%B5%EC%85%98
+
