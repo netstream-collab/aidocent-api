@@ -55,6 +55,10 @@ export class IChatHis {
 }
 
 export class IGptMessageFromChat {
+  @Expose({ name: 'nCHAT_ID' })
+  @Type(() => Number)
+  chatId?: number;
+
   @Expose({ name: 'cSPEAKER_ROLE' })
   role: TChatGptRole;
 

@@ -26,6 +26,8 @@ import { ClovaCSRService } from '../utils/clova/clova-csr.service';
 import { EtriService } from '../utils/etri/etri.service';
 import { CustomSearchJsonService } from '../utils/google/custom-search-json.service';
 import { SearchTagsSummaryDTO } from './dto/search-tags-summary.dto';
+import MemoryDal from "./dal/layers/memory.dal";
+import { IGptMessageFromChat } from "./dal/dto/chatHis.dto";
 
 @Injectable()
 export class AidocentService {
@@ -39,6 +41,7 @@ export class AidocentService {
     private clovaCSRService: ClovaCSRService,
     private chatHisDAL: ChatHisDAL,
     private projDAL: ProjDAL,
+    private memoryDAL: MemoryDal,
     private customSearchJsonService: CustomSearchJsonService,
   ) {}
 
@@ -215,6 +218,7 @@ export class AidocentService {
 
   async askToAiWithProjectByStreaming(res: Response, project: IProj, body: ChatAskToAiDTO) {
     // this.validateConvoSessionId(body.convoSessionId);
+
     const { userrMessage, messages } = await this.generateAiChatCompletionMessages(project, body);
 
     // gpt에게 요청
@@ -354,8 +358,39 @@ export class AidocentService {
     // 기존 메시지 내역 가져오기
     // body.convoSessionId이 없으면 히스토리를 가져오지 않는다.
     const messages = !isEmpty(body.convoSessionId)
-      ? (await this.chatHisDAL.findByConviSessionIdForGpt(project.projId, body.convoSessionId, 4)).reverse()
+      ? (await this.chatHisDAL.findByConviSessionIdForGpt(project.projId, body.convoSessionId, body.limit)).reverse()
       : [];
+
+    if (body.isRemind === 1) {
+      const memories = await this.memoryDAL.findByConviSessionId(body.convoSessionId); // sessionId를 기준으로 모두 조회
+
+      if (messages.length >= body.limit) {
+        let flag = true;
+        if (memories[0]) {
+          for (let i = 0; i < messages.length; i++) {
+            // 최근 메시지들 중 기억된 대화 내용이 있는 지 확인
+            if (memories[0].lastChatId === messages[i].chatId) {
+              flag = false;
+              break; // 있을 경우 압축을 하지 않음
+            }
+          }
+        }
+        if (flag) {
+          const memory = await this.chatGptService.createChat([new ChatGptMessage('system', '다음 대화 기록을 chat gpt가 기억하기 쉽도록 요약하시오' + JSON.stringify(messages))], body.model);
+
+          const save = await this.memoryDAL.create({
+            convoSessionId: body.convoSessionId,
+            lastChatId: messages[messages.length - 1].chatId,
+            content: memory.answer.content,
+          });
+        }
+      }
+
+      if (memories.length > 0) {
+        messages.push(new ChatGptMessage('system', '이전 대화 기록을 참고하여 답변하시오' + JSON.stringify(memories)));
+      }
+    }
+
     if (prompt) messages.unshift(prompt);
     messages.unshift(infoPrompt);
     messages.push(userrMessage);
@@ -363,6 +398,8 @@ export class AidocentService {
     // 답변 길이 설정하기
     const lengthPrompt = this.createLengthPrompt(body.length);
     if (lengthPrompt) messages.push(new ChatGptMessage('system', lengthPrompt));
+
+    console.log('>>>>>>>>>>>>>>>>>>>', messages);
     return { userrMessage, messages };
   }
 

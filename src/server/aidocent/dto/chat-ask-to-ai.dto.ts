@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional, OmitType } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from "class-validator";
 import Codes from 'src/server/constants/codes';
 
 export class ChatAskToAiDTO {
@@ -41,6 +41,25 @@ export class ChatAskToAiDTO {
   @IsString()
   @IsOptional()
   readonly model?: string;
+
+  @ApiPropertyOptional({
+    title: '이전 대화 조회 개수',
+    description: '이전 대회 조회 목록 개수',
+    default: 4,
+  })
+  @IsOptional()
+  @IsNumber()
+  readonly limit?: number = 4;
+
+  @ApiPropertyOptional({
+    title: '기억의존 여부',
+    description: '0: 사용 안함, 1: 기억의존 사용',
+    default: 0,
+    enum: [0, 1],
+  })
+  @IsOptional()
+  @IsNumber()
+  readonly isRemind?: number = 0;
 }
 
 export class ChatAskToAiByVoiceDTO extends OmitType(ChatAskToAiDTO, ['question']) {
