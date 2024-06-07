@@ -28,7 +28,7 @@ const Codes = {
   // LLMModels: ['gpt-4-1106-preview', 'gpt-3.5-turbo'] as string[],
  
   // LLMModels: ['gpt-4-1106-preview', 'gpt-3.5-turbo', 'gpt-3.5-turbo-1106'] as string[],
-  LLMModels: ['gpt-3.5-turbo', 'gpt-4-1106-preview', 'gpt-3.5-turbo-1106'] as string[],
+  LLMModels: ['gpt-3.5-turbo', 'gpt-4-1106-preview', 'gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo-1106'] as string[],
 } as const;
 
 export default Codes;

@@ -65,7 +65,9 @@ export class AidocentController {
   @Post('/proj/new')
   @HttpCode(200)
   createNewProject(@Body() body: ProjCreateDTO) {
-    return this.aidocentService.createNewProject(body);
+
+	console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>AI DOCNT 연결 됐슈 !!!!!!!!!!!!!!!<<<<<<<<<<<<<<<<');
+	return this.aidocentService.createNewProject(body);
   }
 
   @ApiOperation({ summary: '특정 프로젝트 정보 가져오기' })

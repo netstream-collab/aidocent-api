@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'aidocent-api',
       script: './dist/main.js',
-      instances: 1,
+      instances: 2,
       exec_mode: 'cluster',
       watch: false,
       wait_ready: true,
