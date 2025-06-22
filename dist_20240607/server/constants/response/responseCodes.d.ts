@@ -1,0 +1,32 @@
+export declare const StatusCodes: {
+    readonly OK: 200;
+    readonly CREATED: 201;
+    readonly ACCEPTED: 202;
+    readonly NO_CONTENT: 204;
+    readonly BAD_REQUEST: 400;
+    readonly UNAUTHORIZED: 401;
+    readonly FORBIDDEN: 403;
+    readonly NOT_FOUND: 404;
+    readonly WRONG_DATA: 406;
+    readonly CONFLICT: 409;
+    readonly ENTITIY_TOO_LONG: 413;
+    readonly UNSUPPORTED_MEDIA_TYPE: 415;
+    readonly INTERNAL_SERVER_ERROR: 500;
+};
+export declare const ResponseMessage: {
+    readonly 200: "Ok";
+    readonly 201: "Created";
+    readonly 202: "Accepted";
+    readonly 204: "No Content";
+    readonly 400: "Bad Request";
+    readonly 401: "Unauthorized";
+    readonly 403: "Forbidden";
+    readonly 404: "Not Found";
+    readonly 406: "Wrong Data";
+    readonly 409: "Confict";
+    readonly 413: "Entity Too Long";
+    readonly 415: "Unsupported Media Type";
+    readonly 500: "Server Error";
+};
+export type TStatusCodes = keyof typeof StatusCodes | keyof typeof ResponseMessage;
+export declare function isTStatusCodes(v: any): boolean;

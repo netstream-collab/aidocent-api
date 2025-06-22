@@ -1,0 +1,12 @@
+export declare function createUUID(): string;
+export declare function isString(value: any): boolean;
+export declare function isEmpty(value: any): boolean;
+export declare function convertStringToJson(value: any): any;
+export declare function convertObjectToJsonString(value: any): string;
+export declare function createRandomString(length: number): string;
+export declare function concatValues(...arg: any[]): string;
+export declare function ensureStringArray(value: string | string[]): string[];
+export declare function queryStringify(obj: any, useQm?: boolean): string;
+export declare function base64urlToBase64(base64url: string): string;
+export declare function base64ToUtf8(base64: string): string;
+export declare function base64urlToUtf8(base64url: string): string;

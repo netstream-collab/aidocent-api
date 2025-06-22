@@ -1,0 +1,54 @@
+/// <reference types="multer" />
+import { ChatGptService } from '../utils/open-ai/chat-gpt.service';
+import { BasicResponse } from '../constants/response/basicResponse';
+import { ChatAskToAiByVoiceDTO, ChatAskToAiDTO } from './dto/chat-ask-to-ai.dto';
+import ChatHisDAL from './dal/layers/chatHis.dal';
+import { ProjCreateDTO } from './dto/proj-create.dto';
+import ProjDAL from './dal/layers/proj.dal';
+import { Response } from 'express';
+import { IProj } from './dal/dto/proj.dto';
+import { ProjUpdateDTO } from './dto/proj-update.dto';
+import { ClovaVoiceService } from '../utils/clova/clova-voice.service';
+import { ChatGptMessage } from '../utils/open-ai/types/chat-message.type';
+import { WhisperService } from '../utils/open-ai/whisper.service';
+import { ClovaCSRService } from '../utils/clova/clova-csr.service';
+import { EtriService } from '../utils/etri/etri.service';
+import { CustomSearchJsonService } from '../utils/google/custom-search-json.service';
+import { SearchTagsSummaryDTO } from './dto/search-tags-summary.dto';
+import MemoryDal from "./dal/layers/memory.dal";
+import { IGptMessageFromChat } from "./dal/dto/chatHis.dto";
+export declare class AidocentService {
+    private chatGptService;
+    private whisperService;
+    private clovaVoiceService;
+    private etriService;
+    private clovaCSRService;
+    private chatHisDAL;
+    private projDAL;
+    private memoryDAL;
+    private customSearchJsonService;
+    private logger;
+    constructor(chatGptService: ChatGptService, whisperService: WhisperService, clovaVoiceService: ClovaVoiceService, etriService: EtriService, clovaCSRService: ClovaCSRService, chatHisDAL: ChatHisDAL, projDAL: ProjDAL, memoryDAL: MemoryDal, customSearchJsonService: CustomSearchJsonService);
+    searchTest(): Promise<BasicResponse<unknown>>;
+    getAllProject(): Promise<BasicResponse<unknown>>;
+    createNewProject(body: ProjCreateDTO): Promise<BasicResponse<unknown>>;
+    getOneProjectInfo(projId: number): Promise<BasicResponse<unknown>>;
+    updateProjectInfo(projId: number, body: ProjUpdateDTO): Promise<BasicResponse<unknown>>;
+    deleteOneProject(projId: number): Promise<BasicResponse<unknown>>;
+    renewRestApiKeyOfProject(projId: number): Promise<BasicResponse<unknown>>;
+    getAllConvoOfProject(projId: number): Promise<BasicResponse<unknown>>;
+    getAllChatsOfConvoSession(convoSessionId: string): Promise<BasicResponse<unknown>>;
+    searchTagsSummary(response: any, body: SearchTagsSummaryDTO): Promise<BasicResponse<unknown>>;
+    getProjectInfoByRestApiKey(project: any): Promise<BasicResponse<unknown>>;
+    startNewConversation(response: Response, projId: number): Promise<BasicResponse<unknown>>;
+    validateConvoSessionId(convoSessionId: string): boolean;
+    askToAiWithProject(project: IProj, body: ChatAskToAiDTO): Promise<BasicResponse<unknown>>;
+    askToAiWithProjectByStreaming(res: Response, project: IProj, body: ChatAskToAiDTO): Promise<void>;
+    askToAiWithProjectReturnTTS(response: Response, project: IProj, body: ChatAskToAiDTO): Promise<void>;
+    askToAiWithProjectByVoice(response: Response, project: IProj, body: ChatAskToAiByVoiceDTO, questionVoiceFile: Express.Multer.File): Promise<BasicResponse<unknown>>;
+    generateAiChatCompletionMessages(project: IProj, body: ChatAskToAiDTO): Promise<{
+        userrMessage: ChatGptMessage;
+        messages: IGptMessageFromChat[];
+    }>;
+    createLengthPrompt(length?: string | 'short' | 'long'): "" | "20초 이하의 분량으로 답해." | "5줄 이상의 분량으로 답해.";
+}
