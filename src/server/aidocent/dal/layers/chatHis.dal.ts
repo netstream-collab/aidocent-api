@@ -101,11 +101,17 @@ export default class ChatHisDAL {
     const result = await this.chatHisRepo
       .createQueryBuilder('chatHis')
       .select('*')
-      .where('chatHis.nPROJ_ID = :projId', {
+      .where(`chatHis.nPROJ_ID = :projId and nCHAT_ID= 
+(
+    SELECT MIN(subChat.nCHAT_ID)
+    FROM TB_CHAT_HIS subChat
+    WHERE subChat.sCONVO_SESSION_ID = chatHis.sCONVO_SESSION_ID
+      AND subChat.nPROJ_ID = :projId
+) `, {
         projId: projId,
       })
       .orderBy('chatHis.nCHAT_ID', 'DESC')
-      .groupBy('chatHis.sCONVO_SESSION_ID')
+//      .groupBy('chatHis.sCONVO_SESSION_ID')
       .getRawMany();
     return this.convertResult(result);
   }

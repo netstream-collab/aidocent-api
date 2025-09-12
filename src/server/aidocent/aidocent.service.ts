@@ -120,7 +120,7 @@ export class AidocentService {
   }
 
   async getAllChatsOfConvoSession(convoSessionId: string) {
-    const chats = await this.chatHisDAL.findByConviSessionId(convoSessionId, 0);
+    const chats = await this.chatHisDAL.findByConviSessionId(convoSessionId);
     return new BasicResponse().status(200).message('').data({ chats });
   }
 
@@ -197,6 +197,7 @@ export class AidocentService {
           type: '',
           status: Codes.ChatHisStatus.VALID,
           speakerRole: userrMessage.role,
+          resType: Codes.ChatHisResType.TEXT,
           content: userrMessage.content,
         },
         {
