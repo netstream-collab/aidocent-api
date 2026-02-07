@@ -31,7 +31,8 @@
       "https://www.ai-docent.com",
       "http://localhost:3000",
       "https://ai-docent.com",
-      "https://aidoo.kr"
+      "https://aidoo.kr",
+      "https://*.aidoo.kr"
     ],
     "cookie_domains": []
   }
