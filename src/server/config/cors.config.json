@@ -1,6 +1,11 @@
 {
   "local": {
-    "cors_origins": ["http://localhost:4000", "http://localhost:3333", "http://localhost:3000", "http://localhost:3001"],
+    "cors_origins": [
+      "http://localhost:4000",
+      "http://localhost:3333",
+      "http://localhost:3000",
+      "http://localhost:3001"
+    ],
     "cookie_domains": []
   },
   "dev": {
@@ -12,13 +17,14 @@
       "https://api.ai-docent.com",
       "https://www.ai-docent.com",
       "https://ai-docent.com",
-      "https://*.aidoo.kr",
       "https://aidoo.kr"
     ],
     "cookie_domains": []
   },
   "qa": {
-    "cors_origins": ["https://*.aidoo.kr", "https://aidoo.kr"],
+    "cors_origins": [
+      "https://aidoo.kr"
+    ],
     "cookie_domains": []
   },
   "prod": {
@@ -33,7 +39,6 @@
       "https://www.ai-docent.com",
       "http://localhost:3000",
       "https://ai-docent.com",
-      "https://*.aidoo.kr",
       "https://aidoo.kr"
     ],
     "cookie_domains": []
