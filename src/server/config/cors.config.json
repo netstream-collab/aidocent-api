@@ -11,12 +11,14 @@
       "http://localhost:3000",
       "https://api.ai-docent.com",
       "https://www.ai-docent.com",
-      "https://ai-docent.com"
+      "https://ai-docent.com",
+      "https://aidoo.kr",
+      "https://www.aidoo.kr"
     ],
     "cookie_domains": []
   },
   "qa": {
-    "cors_origins": [],
+    "cors_origins": ["https://aidoo.kr", "https://www.aidoo.kr"],
     "cookie_domains": []
   },
   "prod": {
@@ -32,7 +34,7 @@
       "http://localhost:3000",
       "https://ai-docent.com",
       "https://aidoo.kr",
-      "https://*.aidoo.kr"
+      "https://www.aidoo.kr"
     ],
     "cookie_domains": []
   }
