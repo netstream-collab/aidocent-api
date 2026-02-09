@@ -22,7 +22,23 @@ async function bootstrap() {
     logger: new CustomLogger(),
   });
 
-  // set cors
+  // OPTIONS preflight: handle first so preflight always gets 204 before any other middleware
+  app.use((req, res, next) => {
+    if (req.method === 'OPTIONS') {
+      const origin = req.headers.origin as string | undefined;
+      const allowed = CorsConfig.origin as string[];
+      const allowOrigin = origin && allowed.includes(origin) ? origin : allowed[0] || '*';
+      res.setHeader('Access-Control-Allow-Origin', allowOrigin);
+      res.setHeader('Access-Control-Allow-Methods', CorsConfig.option.methods as string);
+      res.setHeader('Access-Control-Allow-Headers', (CorsConfig.option.allowedHeaders as string[]).join(','));
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      res.setHeader('Access-Control-Max-Age', '86400');
+      return res.status(204).end();
+    }
+    next();
+  });
+
+  // set cors (for non-OPTIONS requests)
   app.enableCors(CorsConfig.option);
 
   app.use(cookieParser(process.env.JWT_SECRET));
